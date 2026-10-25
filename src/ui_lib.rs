@@ -1,9 +1,16 @@
+use std::fmt::Alignment;
+use anyhow::Error;
 use eframe::egui;
-use egui_extras::{Column, TableBuilder};
+use eframe::egui::{Color32, Vec2, RichText, Align, FontSelection, Style, text};
+use egui_extras::{Column, Size, TableBuilder};
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use crate::DubiousDubsState;
+use crate::{CurrentMode, DubiousDubsState};
+use crate::audio_recorder_worker::{start_audio_recording, stop_audio_recording};
 
-pub fn generated_ui(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
+pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
+
+
+
     if state.enable_top {
         egui::Panel::top("gen_top")
             .resizable(true)
@@ -22,13 +29,47 @@ pub fn generated_ui(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             });
     }
 
+
+
     egui::CentralPanel::default().show(ui, |ui| {
         // let canvas = egui::Rect::from_min_size(ui.min_rect().min, egui::vec2(700.0, 600.0));
         // let _ = ui.allocate_painter(canvas.size(), egui::Sense::hover());
 
-        ui.scope_builder(egui::UiBuilder::new().max_rect(egui::Rect::from_min_size(ui.min_rect().min + egui::vec2(10.0, 10.0), egui::vec2(400.0, 400.0))), |ui| {
+        generate_center_ui_elements(ui, state);
 
-            egui::Frame::canvas(ui.style()).inner_margin(4).corner_radius(3).show(ui, |ui| {
+    });
+}
+
+pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(),anyhow::Error> {
+    let record_button_text = if state.current_mode == CurrentMode::Recording {"Stop Recording"} else {"Start Recording"};
+    let record_button_styled_text =
+        RichText::new(record_button_text)
+            .size(28.0).color(Color32::WHITE);
+    let record_button = egui::Button::new(record_button_styled_text)
+        .fill(if state.current_mode == CurrentMode::Recording {Color32::DARK_RED} else {Color32::DARK_GREEN})
+        .min_size(Vec2::new(250.0, 100.0));
+
+    if ui.add(record_button)
+        .clicked() {
+        if state.current_mode == CurrentMode::Recording {
+
+            state.current_mode = CurrentMode::Idle;
+            stop_audio_recording(&mut state.recorder)?;
+        } else{
+            state.current_mode = CurrentMode::Recording;
+            start_audio_recording(&mut state.recorder,&state.selected_filename.as_str())?;
+        }
+    }
+
+    let mut editable_textbox_response = ui.add(egui::TextEdit::singleline(&mut state.selected_filename));
+    editable_textbox_response.set_intrinsic_size(Vec2::new(250.0, 100.0));
+
+
+
+
+    ui.scope_builder(egui::UiBuilder::new().max_rect(egui::Rect::from_min_size(ui.min_rect().min + egui::vec2(10.0, 300.0), egui::vec2(400.0, 400.0))), |ui| {
+
+        egui::Frame::canvas(ui.style()).inner_margin(4).corner_radius(3).show(ui, |ui| {
             TableBuilder::new(ui)
                 .striped(true)
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
@@ -56,7 +97,7 @@ pub fn generated_ui(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                     }
 
                 });
-            });
         });
     });
+    Ok(())
 }
