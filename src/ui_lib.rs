@@ -2,10 +2,11 @@ use std::fmt::Alignment;
 use anyhow::Error;
 use eframe::egui;
 use eframe::egui::{Color32, Vec2, RichText, Align, FontSelection, Style, text};
-use egui_extras::{Column, Size, TableBuilder};
+use egui_extras::{Column, Size, TableBody, TableBuilder, TableRow};
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use crate::{CurrentMode, DubiousDubsState};
+use crate::{csv_lib, CurrentMode, DubiousDubsState};
 use crate::audio_lib::{start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording};
+use crate::csv_lib::CsvRecord;
 
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
@@ -35,10 +36,13 @@ pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
         // let canvas = egui::Rect::from_min_size(ui.min_rect().min, egui::vec2(700.0, 600.0));
         // let _ = ui.allocate_painter(canvas.size(), egui::Sense::hover());
 
-        generate_center_ui_elements(ui, state);
+        generate_center_ui_elements(ui, state).expect("TODO: panic message");
 
     });
 }
+
+
+
 
 pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(),anyhow::Error> {
     let record_button_text = if state.current_mode == CurrentMode::Recording {"Stop Recording"} else {"Start Recording"};
@@ -99,34 +103,81 @@ pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsSta
     ui.scope_builder(egui::UiBuilder::new().max_rect(egui::Rect::from_min_size(ui.min_rect().min + egui::vec2(10.0, 300.0), egui::vec2(400.0, 400.0))), |ui| {
 
         egui::Frame::canvas(ui.style()).inner_margin(4).corner_radius(3).show(ui, |ui| {
-            TableBuilder::new(ui)
-                .striped(true)
-                .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
-                .vscroll(true)
-                .column(Column::auto().resizable(true))
-                .column(Column::remainder())
-                .header(20.0, |mut header| {
-                    header.col(|ui| {
-                        ui.heading("First column");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Second column");
-                    });
-                })
-                .body(|mut body| {
-                    for i in 0..7 {
-                        body.row(30.0, |mut row| {
-                            row.col(|ui| {
-                                ui.label("Hello");
-                            });
-                            row.col(|ui| {
-                                ui.button("world!");
-                            });
-                        });
-                    }
-
-                });
+            generate_csv_table(ui, state).expect("CsvTable");
         });
     });
     Ok(())
 }
+
+fn generate_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(),Error> {
+     TableBuilder::new(ui)
+        .striped(true)
+        .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
+        .vscroll(true)
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .header(20.0, |mut header| {
+            header.col(|ui| { ui.heading("Story ID"); });
+            header.col(|ui| { ui.heading("Choice ID"); });
+            header.col(|ui| { ui.heading("Hashcode"); });
+            header.col(|ui| { ui.heading("Filename"); });
+            header.col(|ui| { ui.heading("Character"); });
+            header.col(|ui| { ui.heading("Characters"); });
+            header.col(|ui| { ui.heading("Button Text"); });
+            header.col(|ui| { ui.heading("Sets"); });
+            header.col(|ui| { ui.heading("Line To Dub"); });
+            header.col(|ui| { ui.heading("Requirements"); });
+            header.col(|ui| { ui.heading("Path"); });
+            header.col(|ui| { ui.heading("Level"); });
+            header.col(|ui| { ui.heading("Is Dream"); });
+            header.col(|ui| { ui.heading("Is Flirt"); });
+            header.col(|ui| { ui.heading("Is Groundhog"); });
+            header.col(|ui| { ui.heading("Has Battle"); });
+
+        })
+        .body(|mut body| {
+
+            //generate_csv_rows(&mut body, state).expect("TODO: panic message");
+            let records = &state.csv_records;
+            body.rows(30.0, records.len(), |mut row| {
+                let rec = &records[row.index()];
+                row.col(|ui| { ui.label(&rec.story_id); });
+                row.col(|ui| { ui.label(&rec.choice_id); });
+                row.col(|ui| { ui.label(&rec.hashcode); });
+                row.col(|ui| { ui.label(&rec.filename); });
+                row.col(|ui| { ui.label(&rec.character); });
+                row.col(|ui| { ui.label(&rec.characters); });
+                row.col(|ui| { ui.label(&rec.button_text); });
+                row.col(|ui| { ui.label(&rec.sets); });
+                row.col(|ui| { ui.label(&rec.line_to_dub); });
+                row.col(|ui| { ui.label(&rec.requirements); });
+                row.col(|ui| { ui.label(&rec.path); });
+                row.col(|ui| { ui.label(&rec.level); });
+                row.col(|ui| { ui.label(&rec.is_dream); });
+                row.col(|ui| { ui.label(&rec.is_flirt); });
+                row.col(|ui| { ui.label(&rec.is_groundhog); });
+                row.col(|ui| { ui.label(&rec.has_battle); });
+            });
+        });
+    Ok(())
+}
+
+
+
+// row.col(|ui| {
+// ui.label("Hello");
+// });

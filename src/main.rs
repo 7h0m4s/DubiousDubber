@@ -77,7 +77,7 @@ impl eframe::App for DubiousDubsApp {
 
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size((800.0, 800.0)),
+        viewport: egui::ViewportBuilder::default().with_inner_size((1800.0, 800.0)),
         centered: true,
         ..eframe::NativeOptions::default() };
 

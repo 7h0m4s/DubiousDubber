@@ -8,22 +8,22 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct CsvRecord {
-    story_id: String,
-    choice_id: String,
-    hashcode: String,
-    filename: String,
-    character: String,
-    characters: String,
-    button_text: String,
-    sets: String,
-    line_to_dub: String,
-    requirements: String,
-    path: String,
-    level: String,
-    is_dream: String,
-    is_flirt: String,
-    is_groundhog: String,
-    has_battle: String,
+    pub story_id: String,
+    pub choice_id: String,
+    pub hashcode: String,
+    pub filename: String,
+    pub character: String,
+    pub characters: String,
+    pub button_text: String,
+    pub sets: String,
+    pub line_to_dub: String,
+    pub requirements: String,
+    pub path: String,
+    pub level: String,
+    pub is_dream: String,
+    pub is_flirt: String,
+    pub is_groundhog: String,
+    pub has_battle: String,
 }
 
 
@@ -32,7 +32,7 @@ pub fn parse_csv_records() -> Result<Vec<CsvRecord>, Box<dyn Error>> {
     let mut csv_vec: Vec<CsvRecord> = Vec::new();
     for result in rdr.deserialize() {
         let record: CsvRecord = result?;
-        println!("{:?}", record);
+        //println!("{:?}", record);
         csv_vec.push(record);
         // Try this if you don't like each record smashed on one line:
         // println!("{:#?}", record);
