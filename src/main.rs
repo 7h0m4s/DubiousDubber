@@ -8,6 +8,8 @@ use crate::csv_lib::{parse_csv_records, CsvRecord};
 mod ui_lib;
 mod csv_lib;
 mod audio_lib;
+mod file_lib;
+mod string_lib;
 
 #[derive(Debug,PartialEq)]
 enum CurrentMode {
@@ -22,10 +24,13 @@ struct DubiousDubsState {
     sel_13: usize,
     current_mode: CurrentMode,
     selected_filename: String,
+    attempt_directory: String,
     recorder: audio_recorder_rs::Recorder,
     player: rodio::Sink,
     player_out_stream: OutputStream,
-    csv_records: Vec<CsvRecord>
+    csv_records: Vec<CsvRecord>,
+    hovered_dub_id: String,
+    selected_dub_id: String
 }
 
 impl Default for DubiousDubsState {
@@ -41,10 +46,13 @@ impl Default for DubiousDubsState {
             sel_13: 0,
             current_mode: CurrentMode::Idle,
             selected_filename: "123.wav".to_owned(),
+            attempt_directory: "Attempts".to_owned(),
             recorder: Recorder::default(),
             player: sink,
             player_out_stream: stream_handle,
-            csv_records: csv_results
+            csv_records: csv_results,
+            hovered_dub_id: "123".to_owned(),
+            selected_dub_id: "123".to_owned()
         }
     }
 }

@@ -1,9 +1,10 @@
 use std::fmt::Alignment;
 use anyhow::Error;
-use eframe::egui;
+use eframe::egui::{self, IdSalt, Stroke};
 use eframe::egui::{Color32, Vec2, RichText, Align, FontSelection, Style, text};
 use egui_extras::{Column, Size, TableBody, TableBuilder, TableRow};
 use eframe::egui::scroll_area::ScrollBarVisibility;
+use crate::file_lib::{get_current_attempt_files, get_next_attempt_filename_from_file_list};
 use crate::{csv_lib, CurrentMode, DubiousDubsState};
 use crate::audio_lib::{start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording};
 use crate::csv_lib::CsvRecord;
@@ -51,7 +52,7 @@ pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsSta
             .size(28.0).color(Color32::WHITE);
     let record_button = egui::Button::new(record_button_styled_text)
         .fill(if state.current_mode == CurrentMode::Recording {Color32::DARK_RED} else {Color32::DARK_GREEN})
-        .min_size(Vec2::new(250.0, 100.0));
+        .min_size(Vec2::new(125.0, 50.0));
 
     if ui.add(record_button)
         .clicked() {
@@ -79,7 +80,7 @@ pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsSta
             .size(28.0).color(Color32::WHITE);
     let playback_button = egui::Button::new(playback_button_styled_text)
         .fill(if state.current_mode == CurrentMode::Playback {Color32::DARK_RED} else {Color32::DARK_GREEN})
-        .min_size(Vec2::new(250.0, 100.0));
+        .min_size(Vec2::new(125.0, 50.0));
 
     if ui.add(playback_button)
         .clicked() {
@@ -97,23 +98,34 @@ pub fn generate_center_ui_elements(ui: &mut egui::Ui, state: &mut DubiousDubsSta
     let mut editable_textbox_response = ui.add(egui::TextEdit::singleline(&mut state.selected_filename));
     editable_textbox_response.set_intrinsic_size(Vec2::new(250.0, 100.0));
 
-
-
-
-    ui.scope_builder(egui::UiBuilder::new().max_rect(egui::Rect::from_min_size(ui.min_rect().min + egui::vec2(10.0, 300.0), egui::vec2(400.0, 400.0))), |ui| {
-
-        egui::Frame::canvas(ui.style()).inner_margin(4).corner_radius(3).show(ui, |ui| {
-            generate_csv_table(ui, state).expect("CsvTable");
-        });
+    egui::Frame::canvas(ui.style_mut()).inner_margin(4).corner_radius(3).show(ui, |ui| {
+        generate_csv_table(ui, state).expect("CsvTable");
     });
+
+    egui::Frame::canvas(ui.style_mut()).inner_margin(4).corner_radius(3).show(ui, |ui| {
+    generate_attempt_file_table(ui, state).expect("AttemptTable");
+    });
+
+
+    // ui.scope_builder(egui::UiBuilder::new().max_rect(egui::Rect::from_min_size(ui.min_rect().min + egui::vec2(10.0, 300.0), egui::vec2(400.0, 400.0))), |ui| {
+    //
+    //     egui::Frame::canvas(ui.style()).inner_margin(4).corner_radius(3).show(ui, |ui| {
+    //         generate_csv_table(ui, state).expect("CsvTable");
+    //     });
+    // });
     Ok(())
 }
 
 fn generate_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(),Error> {
      TableBuilder::new(ui)
         .striped(true)
+        .sense(egui::Sense::click())
+        .sense(egui::Sense::hover())
+        .id_salt("csvtable")
         .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
         .vscroll(true)
+        .max_scroll_height(200.0)
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
         .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
         .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
         .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
@@ -131,6 +143,7 @@ fn generate_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
         .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
         .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
         .header(20.0, |mut header| {
+            header.col(|ui| { ui.heading("Dub ID"); });
             header.col(|ui| { ui.heading("Story ID"); });
             header.col(|ui| { ui.heading("Choice ID"); });
             header.col(|ui| { ui.heading("Hashcode"); });
@@ -155,24 +168,99 @@ fn generate_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
             let records = &state.csv_records;
             body.rows(30.0, records.len(), |mut row| {
                 let rec = &records[row.index()];
-                row.col(|ui| { ui.label(&rec.story_id); });
-                row.col(|ui| { ui.label(&rec.choice_id); });
-                row.col(|ui| { ui.label(&rec.hashcode); });
-                row.col(|ui| { ui.label(&rec.filename); });
-                row.col(|ui| { ui.label(&rec.character); });
-                row.col(|ui| { ui.label(&rec.characters); });
-                row.col(|ui| { ui.label(&rec.button_text); });
-                row.col(|ui| { ui.label(&rec.sets); });
-                row.col(|ui| { ui.label(&rec.line_to_dub); });
-                row.col(|ui| { ui.label(&rec.requirements); });
-                row.col(|ui| { ui.label(&rec.path); });
-                row.col(|ui| { ui.label(&rec.level); });
-                row.col(|ui| { ui.label(&rec.is_dream); });
-                row.col(|ui| { ui.label(&rec.is_flirt); });
-                row.col(|ui| { ui.label(&rec.is_groundhog); });
-                row.col(|ui| { ui.label(&rec.has_battle); });
+                
+
+                let mut is_selected = rec.dub_id.eq(&state.selected_dub_id);
+                let mut is_hovered = rec.dub_id.eq(&state.hovered_dub_id);
+                row.set_selected(is_selected);
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.dub_id); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.story_id); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.choice_id); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.hashcode); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.filename); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.character); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.characters); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.button_text); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.sets); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.line_to_dub); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.requirements); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.path); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.level); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.is_dream); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.is_flirt); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.is_groundhog); });
+                row.col(|ui| { format_table_cell(ui, is_selected,is_hovered, &rec.has_battle); });
+                
+
+                let is_clicked: bool = row.response().clicked();
+                is_hovered = row.response().hovered();
+                
+                if is_clicked && !is_selected{
+                    state.selected_dub_id = rec.dub_id.to_string();
+                    is_selected = true;
+                }
+
+                if is_hovered{
+                    state.hovered_dub_id = rec.dub_id.to_string()
+                }
+                
+
             });
         });
+    Ok(())
+}
+
+
+fn format_table_cell(ui:&mut egui::Ui, is_selected: bool, is_hovered:bool, text: &String) {
+
+    let styled_text:RichText;
+    if is_selected {
+        ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::DARK_GREEN);
+        styled_text =
+        RichText::new(text).color(Color32::WHITE);
+    }
+    else if is_hovered{
+        //ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::LIGHT_BLUE);
+        styled_text =
+        RichText::new(text).strong();
+    }
+    else {
+        styled_text =
+        RichText::new(text).color(Color32::LIGHT_GRAY);
+    }
+
+    ui.label(styled_text);
+
+}
+
+fn generate_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(),Error> {
+
+    let current_files = get_current_attempt_files(state).unwrap();
+    TableBuilder::new(ui)
+        .striped(true)
+        .id_salt("attempttable")
+        .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
+        .vscroll(true)
+        .max_scroll_height(200.0)
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .column(Column::initial(80.0).at_least(40.0).resizable(true).clip(true))
+        .header(20.0, |mut header| {
+            header.col(|ui| { ui.heading("Attempt ID"); });
+            header.col(|ui| { ui.heading("Filename"); });
+
+        })
+        .body(|mut body| {
+            //generate_csv_rows(&mut body, state).expect("TODO: panic message");
+            
+            body.rows(30.0, current_files.len(), |mut row| {
+                let rec = &current_files[row.index()];
+                let row_id = row.index();
+                row.col(|ui| { ui.label(row_id.to_string()); });
+                row.col(|ui| { ui.label(&rec.to_string()); });
+            });
+        });
+        let next_filename = get_next_attempt_filename_from_file_list(&current_files, state).unwrap();
+        ui.label(next_filename);
     Ok(())
 }
 
