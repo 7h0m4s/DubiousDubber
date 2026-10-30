@@ -51,7 +51,7 @@ pub fn get_next_attempt_filename_from_state(state: &mut DubiousDubsState) -> Res
     }
 
 
-    Ok(format!("{}_{}", &state.selected_dub_id, max_file_number))
+    Ok(format!("{}_{}", &state.selected_dub_index, max_file_number))
 }
 
 pub fn get_next_attempt_filename_from_file_list(filenames: &Vec<String>, state: &mut DubiousDubsState) -> Result<String> {
@@ -69,5 +69,5 @@ pub fn get_next_attempt_filename_from_file_list(filenames: &Vec<String>, state: 
     }
 
 
-    Ok(format!("{}_{}", &state.selected_dub_id, max_file_number))
+    Ok(format!("{}_{}", &state.selected_dub_index, max_file_number))
 }

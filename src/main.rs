@@ -9,7 +9,6 @@ mod ui_lib;
 mod csv_lib;
 mod audio_lib;
 mod file_lib;
-mod string_lib;
 
 #[derive(Debug,PartialEq)]
 enum CurrentMode {
@@ -29,8 +28,12 @@ struct DubiousDubsState {
     player: rodio::Sink,
     player_out_stream: OutputStream,
     csv_records: Vec<CsvRecord>,
-    hovered_dub_id: String,
-    selected_dub_id: String
+    selected_csv_record: CsvRecord,
+    selected_dub_id: String,
+    hovered_dub_index: usize,
+    selected_dub_index: usize,
+    hovered_attempt_filename: String,
+    selected_attempt_filename: String,
 }
 
 impl Default for DubiousDubsState {
@@ -51,8 +54,12 @@ impl Default for DubiousDubsState {
             player: sink,
             player_out_stream: stream_handle,
             csv_records: csv_results,
-            hovered_dub_id: "123".to_owned(),
-            selected_dub_id: "123".to_owned()
+            selected_csv_record: CsvRecord::default(),
+            selected_dub_id: "123".to_owned(),
+            hovered_dub_index: 0,
+            selected_dub_index: 0,
+            hovered_attempt_filename: "".to_owned(),
+            selected_attempt_filename: "".to_owned(),
         }
     }
 }

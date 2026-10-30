@@ -5,10 +5,10 @@ use csv::StringRecord;
 use serde::Deserialize;
 
 //#[serde(rename_all = "PascalCase")]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, Clone)]
 #[serde(rename_all = "snake_case")]
 pub struct CsvRecord {
-    
+
     #[serde(skip_deserializing)]
     pub dub_id: String,
 
@@ -29,6 +29,7 @@ pub struct CsvRecord {
     pub is_groundhog: String,
     pub has_battle: String,
 }
+
 
 
 pub fn parse_csv_records() -> Result<Vec<CsvRecord>, Box<dyn Error>> {
