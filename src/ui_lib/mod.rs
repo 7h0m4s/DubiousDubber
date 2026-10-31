@@ -12,9 +12,10 @@ use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::fmt::Alignment;
 
-mod ui_csv_table;
 mod ui_attempt_file_table;
-
+mod ui_bottom_buttons;
+mod ui_csv_table;
+mod ui_current_details;
 
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
     if state.enable_top {
@@ -49,171 +50,60 @@ pub fn generate_center_ui_elements(
     ui: &mut egui::Ui,
     state: &mut DubiousDubsState,
 ) -> Result<(), anyhow::Error> {
-    let record_button_text = if state.current_mode == CurrentMode::Recording {
-        "Stop Recording"
-    } else {
-        "Start Recording"
-    };
-    let record_button_styled_text = RichText::new(record_button_text)
-        .size(28.0)
-        .color(Color32::WHITE);
-    let record_button = egui::Button::new(record_button_styled_text)
-        .fill(if state.current_mode == CurrentMode::Recording {
-            Color32::DARK_RED
-        } else {
-            Color32::DARK_GREEN
-        })
-        .min_size(Vec2::new(125.0, 50.0));
-
-    if ui.add(record_button).clicked() {
-        if state.current_mode == CurrentMode::Recording {
-            state.current_mode = CurrentMode::Idle;
-            stop_audio_recording(&mut state.recorder)?;
-        } else {
-            state.current_mode = CurrentMode::Recording;
-            start_audio_recording(&mut state.recorder, &state.selected_filename.as_str())?;
-        }
-    }
-
-    // Keep repainting if we are waiting for playback to finish
-    if (state.current_mode == CurrentMode::Playback) {
-        ui.ctx()
-            .request_repaint_after(std::time::Duration::from_millis(50));
-    }
-    // Check playback status
-    if (state.player.empty() || state.player.is_paused())
-        && state.current_mode == CurrentMode::Playback
-    {
-        state.current_mode == CurrentMode::Idle;
-    }
-    let playback_button_text = if state.current_mode == CurrentMode::Playback {
-        "Stop playback"
-    } else {
-        "Start playback"
-    };
-    let playback_button_styled_text = RichText::new(playback_button_text)
-        .size(28.0)
-        .color(Color32::WHITE);
-    let playback_button = egui::Button::new(playback_button_styled_text)
-        .fill(if state.current_mode == CurrentMode::Playback {
-            Color32::DARK_RED
-        } else {
-            Color32::DARK_GREEN
-        })
-        .min_size(Vec2::new(125.0, 50.0));
-
-    if ui.add(playback_button).clicked() {
-        if state.current_mode == CurrentMode::Playback {
-            state.current_mode = CurrentMode::Idle;
-            stop_audio_playback(&mut state.player)?;
-        } else {
-            state.current_mode = CurrentMode::Playback;
-            start_audio_playback(&mut state.player, &state.selected_filename.as_str())?;
-            ui.ctx()
-                .request_repaint_after(std::time::Duration::from_millis(50));
-        }
-    }
-
-    let mut selected_filename_label_response = ui.add(egui::Label::new(format!(
-        "Filename to generate: {}",
-        &state.selected_filename
-    )));
-    selected_filename_label_response.set_intrinsic_size(Vec2::new(250.0, 100.0));
-
-    egui::Frame::canvas(ui.style_mut())
-        .inner_margin(4)
-        .corner_radius(3)
-        .show(ui, |ui| {
-            ui_csv_table::draw_csv_table(ui, state).expect("CsvTable");
+    StripBuilder::new(ui)
+        .size(Size::exact(220.0))
+        .size(Size::remainder())
+        .size(Size::exact(110.0))
+        .vertical(|mut strip| {
+            strip.cell(|ui| {
+                ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
+            });
+            strip.strip(|strip_builder|{
+                    strip_builder
+                    .size(Size::exact(400.0))
+                    .size(Size::remainder())
+                    .clip(true)
+                    .horizontal(|mut horizontal_strip| {
+                        horizontal_strip.cell(|ui| {
+                            ui_attempt_file_table::draw_attempt_file_table(ui, state)
+                                .expect("AttemptTable");
+                        });
+                        
+                        horizontal_strip.cell(|ui| {
+                            ui_current_details::draw_current_details(ui, state);
+                        });
+                    });
+                });
+            strip.cell(|ui| {
+                ui_bottom_buttons::draw_bottom_buttons(ui, state).expect("Failed to render bottom buttons.");
+            });
+        
         });
 
-    ui.add_space(5.0);
-    ui.separator();
-    ui.add_space(5.0);
 
-    // egui::Frame::canvas(ui.style_mut())
-    //     .inner_margin(4)
-    //     .corner_radius(3)
-    //     .show(ui, |ui| {
-    //         draw_attempt_file_table(ui, state).expect("AttemptTable");
+    // StripBuilder::new(ui)
+    //     .size(Size::remainder())
+    //     .size(Size::exact(400.0))
+    //     .clip(true)
+    //     .horizontal(|mut strip| {
+    //         strip.cell(|ui| {
+    //             draw_current_details(ui, state);
+    //         });
+    //         strip.cell(|ui| {
+    //             ui_attempt_file_table::draw_attempt_file_table(ui, state).expect("AttemptTable");
+    //         });
     //     });
 
-    ui.add_space(5.0);
-    ui.separator();
-    ui.add_space(5.0);
+    // ui.add_space(5.0);
+    // ui.separator();
+    // ui.add_space(5.0);
 
-    
-   
-
-    StripBuilder::new(ui)
-    .size(Size::exact(1000.0))
-    .size(Size::remainder())
-    .horizontal(|mut strip|{
-
-        strip.cell(|ui|{
-            draw_current_details(ui, state);
-        });
-        strip.cell(|ui|{
-            ui_attempt_file_table::draw_attempt_file_table(ui, state).expect("AttemptTable");
-        });
-    });
-
-    
+    // ui_bottom_buttons::draw_bottom_buttons(ui, state)?;
 
     Ok(())
 }
 
-fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
-    ui.vertical(|ui| {
-        ui.horizontal_centered(|ui| {
-            ui.vertical(|ui| {
-                draw_gridcell_text(ui, "Dub ID: ", &state.selected_csv_record.dub_id);
-                draw_gridcell_text(ui, "Story ID: ", &state.selected_csv_record.story_id);
-                draw_gridcell_text(ui, "Choice ID: ", &state.selected_csv_record.choice_id);
-                draw_gridcell_text(ui, "Hashcode: ", &state.selected_csv_record.hashcode);
-                draw_gridcell_text(ui, "Character: ", &state.selected_csv_record.character);
-                draw_gridcell_text(ui, "Characters: ", &state.selected_csv_record.characters);
-                draw_gridcell_text(ui, "Button Text: ", &state.selected_csv_record.button_text);
-            });
 
-            ui.vertical(|ui| {
-                
-                draw_gridcell_text(ui, "Level: ", &state.selected_csv_record.level);
-                draw_gridcell_checkbox(
-                    ui,
-                    "Is Dream",
-                    state.selected_csv_record.is_dream.eq("True"),
-                );
-                draw_gridcell_checkbox(
-                    ui,
-                    "Is Flirt",
-                    state.selected_csv_record.is_flirt.eq("True"),
-                );
-                draw_gridcell_checkbox(
-                    ui,
-                    "Is Groundhog",
-                    state.selected_csv_record.is_groundhog.eq("True"),
-                );
-                draw_gridcell_checkbox(
-                    ui,
-                    "Has Battle",
-                    state.selected_csv_record.has_battle.eq("True"),
-                );
-            });
-            ui.vertical(|ui| {
-                draw_gridcell_requirements_text(
-                    ui,
-                    "Requirements: ",
-                    &state.selected_csv_record.requirements,
-                );
-                draw_gridcell_path_text(ui, "Path: ", &state.selected_csv_record.path);
-                draw_gridcell_sets_text(ui, "Sets: ", &state.selected_csv_record.sets);
-                
-            });
-        });
-        draw_gridcell_multiline_text(ui, "Line To Dub: ", &state.selected_csv_record.line_to_dub);
-    });
-}
 
 fn draw_gridcell_text(ui: &mut egui::Ui, label: &str, text: &str) {
     ui.horizontal(|ui| {
@@ -285,8 +175,6 @@ fn draw_gridcell_checkbox(ui: &mut egui::Ui, label: &str, value: bool) {
     });
 }
 
-
-
 fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, text: &String) {
     let styled_text: RichText;
     if is_selected {
@@ -301,5 +189,3 @@ fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, tex
 
     ui.centered_and_justified(|ui| ui.add(egui::Label::new(styled_text).selectable(false)));
 }
-
-
