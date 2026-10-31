@@ -2,6 +2,8 @@ use audio_recorder_rs::Recorder;
 use std::env::var;
 use std::fs::File;
 use std::io::{BufReader, sink};
+use std::path::PathBuf;
+use std::str::FromStr;
 
 use rodio::cpal::traits::HostTrait;
 use rodio::source::SineWave;
@@ -9,10 +11,9 @@ use rodio::{Decoder, DeviceTrait, Sink, Source, cpal};
 use std::thread;
 use std::time::Duration;
 
-pub fn start_audio_recording(
-    mut recorder: &mut Recorder,
-    filename: &str,
-) -> Result<(), anyhow::Error> {
+use crate::DubiousDubsState;
+
+pub fn start_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
     let device = cpal::default_host().default_input_device().unwrap();
     let config = device.default_input_config().unwrap();
     let channels = config.channels();
@@ -30,9 +31,9 @@ pub fn start_audio_recording(
             hound::SampleFormat::Int
         },
     };
-    let mut writer = hound::WavWriter::create(filename, spec)?;
+    let mut writer = hound::WavWriter::create(&state.next_attempt_path, spec)?;
 
-    let receiver = recorder
+    let receiver = state.recorder
         .start(true)
         .expect("Failed to start audio recording");
 
@@ -49,22 +50,33 @@ pub fn start_audio_recording(
     Ok(())
 }
 
-pub fn stop_audio_recording(mut recorder: &mut Recorder) -> Result<(), anyhow::Error> {
-    recorder.stop();
+pub fn stop_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    state.recorder.stop();
     Ok(())
 }
 
-pub fn start_audio_playback(player: &mut Sink, filename: &str) -> Result<(), anyhow::Error> {
-    player.stop();
-    player.clear();
-    let file = File::open(filename).unwrap();
-    let decoder = Decoder::new(file).unwrap();
-    player.append(decoder);
-    player.play();
-    Ok(())
+pub fn start_audio_playback(state: &mut DubiousDubsState) {
+    state.player.stop();
+    state.player.clear();
+
+    let mut audio_file_path = PathBuf::from_str(&state.attempt_directory).unwrap();
+    audio_file_path.push(&state.selected_attempt_filename);
+
+    let file = match File::open(audio_file_path) {
+        Ok(f) => f,
+        Err(_e) => return
+    };
+    let decoder = match Decoder::new(file) {
+        Ok(f) => f,
+        Err(_e) =>  return
+    };
+    state.player.append(decoder);
+    state.player.play();
+    
+    
 }
 
-pub fn stop_audio_playback(player: &mut Sink) -> Result<(), anyhow::Error> {
-    player.stop();
+pub fn stop_audio_playback(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    state.player.stop();
     Ok(())
 }

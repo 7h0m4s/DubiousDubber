@@ -2,7 +2,7 @@ use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
 use crate::csv_lib::CsvRecord;
-use crate::file_lib::{get_current_attempt_files, get_next_attempt_filename_from_file_list};
+use crate::file_lib::{get_current_attempt_files};
 use crate::{CurrentMode, DubiousDubsState, csv_lib};
 use anyhow::Error;
 use eframe::egui::Role::CheckBox;
@@ -51,12 +51,13 @@ pub fn generate_center_ui_elements(
     state: &mut DubiousDubsState,
 ) -> Result<(), anyhow::Error> {
     StripBuilder::new(ui)
-        .size(Size::exact(220.0))
+        .size(Size::exact(235.0))
         .size(Size::remainder())
         .size(Size::exact(110.0))
         .vertical(|mut strip| {
             strip.cell(|ui| {
                 ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
+                ui.separator();
             });
             strip.strip(|strip_builder|{
                     strip_builder

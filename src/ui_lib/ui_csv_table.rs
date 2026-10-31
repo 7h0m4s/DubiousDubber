@@ -2,7 +2,7 @@ use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
 use crate::csv_lib::CsvRecord;
-use crate::file_lib::{get_current_attempt_files, get_next_attempt_filename_from_file_list};
+use crate::file_lib::{get_current_attempt_files};
 use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
 use anyhow::Error;
 use eframe::egui::Role::CheckBox;

@@ -2,7 +2,7 @@ use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
 use crate::csv_lib::CsvRecord;
-use crate::file_lib::{get_current_attempt_files, get_next_attempt_filename_from_file_list};
+use crate::file_lib::{get_current_attempt_files};
 use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
 use anyhow::Error;
 use eframe::egui::Role::CheckBox;
@@ -14,11 +14,9 @@ use std::fmt::Alignment;
 
 
 pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(), Error> {
-    ui.vertical_centered(|ui| {
-        let current_files = get_current_attempt_files(state).unwrap();
-        let next_filename =
-            get_next_attempt_filename_from_file_list(&current_files, state).unwrap();
-        ui_lib::draw_gridcell_text(ui, "Next Filename:", &next_filename);
+
+        
+        ui_lib::draw_gridcell_text(ui, "Next Filename:", &state.next_attempt_filename);
         ui.add_space(15.0);
 
         TableBuilder::new(ui)
@@ -30,13 +28,13 @@ pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) 
             .max_scroll_height(200.0)
             .min_scrolled_height(200.0)
             .column(
-                Column::initial(80.0)
+                Column::initial(100.0)
                     .at_least(40.0)
                     .resizable(true)
                     .clip(true),
             )
             .column(
-                Column::initial(80.0)
+                Column::initial(250.0)
                     .at_least(40.0)
                     .resizable(true)
                     .clip(true),
@@ -52,8 +50,8 @@ pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) 
             .body(|mut body| {
                 //generate_csv_rows(&mut body, state).expect("TODO: panic message");
 
-                body.rows(30.0, current_files.len(), |mut row| {
-                    let rec = &current_files[row.index()];
+                body.rows(30.0, state.current_attempt_filenames.len(), |mut row| {
+                    let rec = &state.current_attempt_filenames[row.index()];
                     let is_selected = rec.eq(&state.selected_attempt_filename);
                     row.set_selected(is_selected);
                     row.set_overline(true);
@@ -77,6 +75,6 @@ pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) 
                     }
                 });
             });
-    });
+
     Ok(())
 }
