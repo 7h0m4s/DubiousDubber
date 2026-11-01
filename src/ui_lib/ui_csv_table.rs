@@ -29,7 +29,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
         state.selected_csv_record = state.filtered_csv_records[0].clone();
         state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
     }
-
+    ui.add_space(10.0); 
     ui.horizontal(|ui| {
         ui.label("Filter: ");
         let csv_filter_box = ui.text_edit_singleline(&mut state.csv_filter);
@@ -46,6 +46,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
             state.csv_records.len()
         ))
     });
+    ui.add_space(10.0); 
 
     egui::Frame::canvas(ui.style_mut())
         .inner_margin(4)
@@ -218,16 +219,6 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 false,
                                 &rec.dub_id,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                false,
-                                &rec.story_id,
                             );
                         });
                         row.col(|ui| {

@@ -56,8 +56,11 @@ pub fn generate_center_ui_elements(
         .size(Size::exact(110.0))
         .vertical(|mut strip| {
             strip.cell(|ui| {
+                
                 ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
+                ui.add_space(10.0);
                 ui.separator();
+                ui.add_space(10.0);
             });
             strip.strip(|strip_builder|{
                     strip_builder

@@ -16,7 +16,7 @@ pub fn draw_attempt_file_table(
     ui: &mut egui::Ui,
     state: &mut DubiousDubsState,
 ) -> Result<(), Error> {
-    ui_lib::draw_gridcell_text(ui, "Next Filename:", &state.next_attempt_filename);
+    //ui_lib::draw_gridcell_text(ui, "Next Filename:", &state.next_attempt_filename, 100.0, 100.0);
     ui.add_space(15.0);
 
     // Select last attempt filename if none selected
