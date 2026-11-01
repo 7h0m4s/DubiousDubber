@@ -2,7 +2,7 @@ use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
 use crate::csv_lib::CsvRecord;
-use crate::file_lib::{get_current_attempt_files};
+use crate::file_lib::{self, get_current_attempt_files};
 use crate::{CurrentMode, DubiousDubsState, csv_lib};
 use anyhow::{Error, Ok};
 use eframe::egui::Role::CheckBox;
@@ -11,19 +11,17 @@ use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::fmt::Alignment;
+use std::ops::Index;
 
 pub fn draw_bottom_buttons(
     ui: &mut egui::Ui,
     state: &mut DubiousDubsState,
 ) -> Result<(), anyhow::Error> {
-
-
     ui.horizontal(|ui| {
-        
         let record_button_text = if state.current_mode == CurrentMode::Recording {
-            "Stop Recording"
+            "(Z) Stop Recording"
         } else {
-            "Start Recording"
+            "(Z) Start Recording"
         };
         let record_button_styled_text = RichText::new(record_button_text)
             .size(24.0)
@@ -36,12 +34,15 @@ pub fn draw_bottom_buttons(
             })
             .min_size(Vec2::new(100.0, 50.0));
 
-        if ui.add(record_button).clicked() {
+        if ui.add(record_button).clicked() || ui.input(|i| i.key_pressed(egui::Key::Z)) {
             if state.current_mode == CurrentMode::Recording {
-                state.current_mode = CurrentMode::Idle;
                 stop_audio_recording(state).expect("Error when stopping recording");
+                if state.is_instant_replay_enabled {
+                    start_audio_playback(state, 20);
+                    ui.ctx()
+                        .request_repaint_after(std::time::Duration::from_millis(50));
+                }
             } else {
-                state.current_mode = CurrentMode::Recording;
                 start_audio_recording(state).expect("Error when starting recording");
             }
         }
@@ -52,7 +53,6 @@ pub fn draw_bottom_buttons(
                 .request_repaint_after(std::time::Duration::from_millis(50));
         }
 
-
         // Check playback status
         if (state.player.empty() || state.player.is_paused())
             && state.current_mode == CurrentMode::Playback
@@ -60,9 +60,9 @@ pub fn draw_bottom_buttons(
             state.current_mode = CurrentMode::Idle;
         }
         let playback_button_text = if state.current_mode == CurrentMode::Playback {
-            "Stop playback"
+            "(X) Stop playback"
         } else {
-            "Start playback"
+            "(X) Start playback"
         };
         let playback_button_styled_text = RichText::new(playback_button_text)
             .size(28.0)
@@ -75,15 +75,57 @@ pub fn draw_bottom_buttons(
             })
             .min_size(Vec2::new(100.0, 50.0));
 
-        if ui.add(playback_button).clicked() {
+        if ui.add(playback_button).clicked() || ui.input(|i| i.key_pressed(egui::Key::X)) {
             if state.current_mode == CurrentMode::Playback {
-                state.current_mode = CurrentMode::Idle;
                 stop_audio_playback(state).expect("Error when stopping playback");
             } else {
-                state.current_mode = CurrentMode::Playback;
-                start_audio_playback(state);
+                start_audio_playback(state, 2);
                 ui.ctx()
                     .request_repaint_after(std::time::Duration::from_millis(50));
+            }
+        }
+
+        ui.add_space(10.0);
+        ui.checkbox(&mut state.is_instant_replay_enabled, "Instant Replay");
+
+        ui.add_space(50.0);
+
+        let commit_selected_button_styled_text = RichText::new("(C) Commit & Next")
+            .size(26.0)
+            .color(Color32::WHITE);
+
+        let mut commit_selected_button =
+            egui::Button::new(commit_selected_button_styled_text).min_size(Vec2::new(70.0, 20.0));
+
+        if (ui
+            .add_enabled(
+                state.current_mode == CurrentMode::Idle,
+                commit_selected_button,
+            )
+            .clicked()
+            || ui.input(|i| i.key_pressed(egui::Key::C)))
+            && state.current_mode == CurrentMode::Idle
+        {
+            if state.selected_attempt_filename != "" {
+                file_lib::commit_selected_attempt_file(state).expect("failed to copy file");
+                let current_csv_selection_index = state
+                    .filtered_csv_records
+                    .iter()
+                    .position(|a| a.dub_id.eq(&state.selected_dub_id))
+                    .unwrap_or(0);
+                let new_selection_index;
+                if state.filtered_csv_records.len() > 1 {
+                    if current_csv_selection_index >= state.filtered_csv_records.len() - 1 {
+                        new_selection_index = current_csv_selection_index - 1;
+                    } else {
+                        new_selection_index = current_csv_selection_index + 1;
+                    }
+
+                    state.selected_csv_record =
+                        state.filtered_csv_records[new_selection_index].clone();
+                    state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
+                    state.selected_attempt_filename.clear();
+                }
             }
         }
     });

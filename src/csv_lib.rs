@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::io;
 use std::path::PathBuf;
+use std::rc::Rc;
 use csv::StringRecord;
 use serde::Deserialize;
 
@@ -32,15 +33,15 @@ pub struct CsvRecord {
 
 
 
-pub fn parse_csv_records() -> Result<Vec<CsvRecord>, Box<dyn Error>> {
+pub fn parse_csv_records() -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_path("AllLinesDump.csv")?;
-    let mut csv_vec: Vec<CsvRecord> = Vec::new();
+    let mut csv_vec: Vec<Rc<CsvRecord>> = Vec::new();
     for result in rdr.deserialize() {
         let mut record: CsvRecord = result?;
 
         record.dub_id = format!("{}_{}", record.story_id, record.hashcode);
         //println!("{:?}", record);
-        csv_vec.push(record);
+        csv_vec.push(Rc::new(record));
         // Try this if you don't like each record smashed on one line:
         // println!("{:#?}", record);
     }

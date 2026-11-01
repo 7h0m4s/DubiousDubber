@@ -176,8 +176,8 @@ fn draw_gridcell_checkbox(ui: &mut egui::Ui, label: &str, value: bool) {
     });
 }
 
-fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, text: &String) {
-    let styled_text: RichText;
+fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, is_committed: bool, is_centered:bool, text: &String) {
+    let mut styled_text: RichText;
     if is_selected {
         //ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::DARK_GREEN);
         styled_text = RichText::new(text).color(Color32::WHITE);
@@ -188,5 +188,17 @@ fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, tex
         styled_text = RichText::new(text).color(Color32::LIGHT_GRAY);
     }
 
-    ui.centered_and_justified(|ui| ui.add(egui::Label::new(styled_text).selectable(false)));
+    if is_committed {
+        styled_text = styled_text.italics().color(Color32::LIGHT_GREEN);
+    }
+
+    let layout = if is_centered{
+        egui::Layout::centered_and_justified(egui::Direction::TopDown)
+    } else {
+        egui::Layout::left_to_right(egui::Align::Center)
+    };
+
+    ui.with_layout(layout, |ui| {ui.add(egui::Label::new(styled_text).selectable(false))});
+
+    
 }

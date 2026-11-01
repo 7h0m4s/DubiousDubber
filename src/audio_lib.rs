@@ -11,9 +11,10 @@ use rodio::{Decoder, DeviceTrait, Sink, Source, cpal};
 use std::thread;
 use std::time::Duration;
 
-use crate::DubiousDubsState;
+use crate::{CurrentMode, DubiousDubsState};
 
 pub fn start_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    state.current_mode = CurrentMode::Recording;
     let device = cpal::default_host().default_input_device().unwrap();
     let config = device.default_input_config().unwrap();
     let channels = config.channels();
@@ -33,7 +34,8 @@ pub fn start_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow:
     };
     let mut writer = hound::WavWriter::create(&state.next_attempt_path, spec)?;
 
-    let receiver = state.recorder
+    let receiver = state
+        .recorder
         .start(true)
         .expect("Failed to start audio recording");
 
@@ -51,32 +53,50 @@ pub fn start_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow:
 }
 
 pub fn stop_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    state.current_mode = CurrentMode::Idle;
     state.recorder.stop();
     Ok(())
 }
 
-pub fn start_audio_playback(state: &mut DubiousDubsState) {
+pub fn start_audio_playback(state: &mut DubiousDubsState, attempts: usize) {
+    state.current_mode = CurrentMode::Playback;
     state.player.stop();
     state.player.clear();
 
     let mut audio_file_path = PathBuf::from_str(&state.attempt_directory).unwrap();
     audio_file_path.push(&state.selected_attempt_filename);
 
-    let file = match File::open(audio_file_path) {
-        Ok(f) => f,
-        Err(_e) => return
-    };
-    let decoder = match Decoder::new(file) {
-        Ok(f) => f,
-        Err(_e) =>  return
-    };
-    state.player.append(decoder);
-    state.player.play();
-    
-    
+    let mut attempts_left = attempts;
+    while (attempts_left > 0) {
+        let file = match File::open(&audio_file_path) {
+            Ok(f) => f,
+            Err(err) => {
+                //eprintln!("failed to open wav file: {}", err);
+                attempts_left -= 1;
+                thread::sleep(Duration::from_millis(50));
+                continue;
+            }
+        };
+        let decoder = match Decoder::new(file) {
+            Ok(f) => f,
+            Err(err) => {
+                attempts_left -= 1;
+                thread::sleep(Duration::from_millis(50));
+                continue;
+            }
+        };
+        state.player.append(decoder);
+        state.player.play();
+        return;
+    }
+    eprintln!(
+        "failed to open wav file: {}",
+        audio_file_path.to_string_lossy()
+    );
 }
 
 pub fn stop_audio_playback(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    state.current_mode = CurrentMode::Idle;
     state.player.stop();
     Ok(())
 }

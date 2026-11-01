@@ -4,6 +4,9 @@ use std::{fs, io};
 use std::io::*;
 use std::fs::{DirEntry, FileType, ReadDir};
 use std::path::{Path, PathBuf};
+
+use cpal::FromSample;
+use eframe::wgpu::naga::FastHashSet;
 use eframe::wgpu::naga::compact::KeepUnused::No;
 
 use crate::DubiousDubsState;
@@ -48,5 +51,38 @@ pub fn get_current_attempt_files(state: &mut DubiousDubsState) -> Result<()> {
     state.next_attempt_path = attempt_path;
 
 
+    Ok(())
+}
+
+
+pub fn get_current_commit_files(state: &mut DubiousDubsState) -> Result<()> {
+    let mut current_commit_path = PathBuf::from(&state.commit_directory);
+
+    // make sure the directory exists
+    fs::create_dir_all(&current_commit_path)?;
+
+    let files: FastHashSet<String> = fs::read_dir(&current_commit_path)?
+    .filter_map(Result::ok)
+    .filter(|f|f.path().is_file())
+    .filter_map(|f| f.file_name().into_string().ok())
+    .filter(|f| f.ends_with(".wav"))
+    .map(|f| f.to_string().replace(".wav", ""))
+    .collect();
+
+    state.committed_dub_id_lookup = files;
+
+    Ok(())
+}
+
+pub fn commit_selected_attempt_file(state: &mut DubiousDubsState) -> std::io::Result<()> {
+
+    if state.selected_attempt_filename == "" { 
+        return Ok(());
+    }
+    let attempt_path :PathBuf = [&state.attempt_directory, &state.selected_attempt_filename].iter().collect();
+    let commit_path :PathBuf = [&state.commit_directory, &format!("{}.wav", &state.selected_dub_id) ].iter().collect();
+
+    fs::create_dir_all(PathBuf::from(&state.commit_directory))?;
+    fs::copy(attempt_path, commit_path)?;  
     Ok(())
 }
