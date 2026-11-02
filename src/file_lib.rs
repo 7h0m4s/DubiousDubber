@@ -45,7 +45,7 @@ pub fn get_current_attempt_files(state: &mut DubiousDubsState) -> Result<()> {
         };
         if file_number > max_file_number {max_file_number = file_number}
     }
-    state.next_attempt_filename = format!("{}_{}.wav", &state.selected_dub_id, max_file_number + 1);
+    state.next_attempt_filename = format!("{}_{:0>3}.wav", &state.selected_dub_id, max_file_number + 1);
     let mut attempt_path = PathBuf::from_str(&state.attempt_directory).unwrap();
     attempt_path.push(&state.next_attempt_filename);
     state.next_attempt_path = attempt_path;

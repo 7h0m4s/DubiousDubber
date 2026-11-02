@@ -38,7 +38,7 @@ pub fn draw_bottom_buttons(
             if state.current_mode == CurrentMode::Recording {
                 stop_audio_recording(state).expect("Error when stopping recording");
                 if state.is_instant_replay_enabled {
-                    start_audio_playback(state, 20);
+                    start_audio_playback(state, 20, true);
                     ui.ctx()
                         .request_repaint_after(std::time::Duration::from_millis(50));
                 }
@@ -79,7 +79,7 @@ pub fn draw_bottom_buttons(
             if state.current_mode == CurrentMode::Playback {
                 stop_audio_playback(state).expect("Error when stopping playback");
             } else {
-                start_audio_playback(state, 2);
+                start_audio_playback(state, 2, true);
                 ui.ctx()
                     .request_repaint_after(std::time::Duration::from_millis(50));
             }

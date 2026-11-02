@@ -58,13 +58,21 @@ pub fn stop_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::
     Ok(())
 }
 
-pub fn start_audio_playback(state: &mut DubiousDubsState, attempts: usize) {
+pub fn start_audio_playback(state: &mut DubiousDubsState, attempts: usize, is_attempt_file:bool) {
     state.current_mode = CurrentMode::Playback;
     state.player.stop();
     state.player.clear();
 
     let mut audio_file_path = PathBuf::from_str(&state.attempt_directory).unwrap();
     audio_file_path.push(&state.selected_attempt_filename);
+
+
+    let audio_file_path :PathBuf;
+    if is_attempt_file{
+        audio_file_path= [&state.attempt_directory, &state.selected_attempt_filename].iter().collect();
+    } else {
+        audio_file_path= [&state.commit_directory, &format!("{}.wav", state.selected_dub_id)].iter().collect();
+    }
 
     let mut attempts_left = attempts;
     while (attempts_left > 0) {

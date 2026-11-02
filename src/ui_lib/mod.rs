@@ -53,7 +53,7 @@ pub fn generate_center_ui_elements(
     StripBuilder::new(ui)
         .size(Size::exact(235.0))
         .size(Size::remainder())
-        .size(Size::exact(110.0))
+        .size(Size::exact(130.0))
         .vertical(|mut strip| {
             strip.cell(|ui| {
                 

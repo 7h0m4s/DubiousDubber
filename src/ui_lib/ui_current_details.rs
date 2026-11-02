@@ -100,6 +100,7 @@ pub fn draw_detail_single_line_label(ui: &mut egui::Ui, text: &str, is_centered:
     });
 }
 
+
 pub fn draw_detail_single_line_value(ui: &mut egui::Ui, text: &str, is_centered: bool) {
     let layout = if is_centered {
         egui::Layout::centered_and_justified(egui::Direction::TopDown)
@@ -125,6 +126,23 @@ pub fn draw_detail_multi_line_value(
     };
     let split_text = text.replace(pattern, format!("\n{}", pattern).as_str());
     let styled_text: RichText = RichText::new(split_text.trim()).strong();
+    ui.with_layout(layout, |ui| {
+        ui.add(egui::Label::new(styled_text).selectable(false).wrap())
+    });
+}
+
+pub fn draw_dub_line_multi_line_value(
+    ui: &mut egui::Ui,
+    text: &str,
+    is_centered: bool,
+) {
+    let layout = if is_centered {
+        egui::Layout::centered_and_justified(egui::Direction::TopDown)
+    } else {
+        egui::Layout::left_to_right(egui::Align::Center)
+    };
+    let split_text = text;
+    let styled_text: RichText = RichText::new(split_text.trim()).strong().size(26.0);
     ui.with_layout(layout, |ui| {
         ui.add(egui::Label::new(styled_text).selectable(false).wrap())
     });
@@ -165,13 +183,13 @@ fn draw_detail_table_1(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             Column::initial(100.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .column(
             Column::initial(250.0)
                 .at_least(40.0)
                 .resizable(true)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -249,13 +267,13 @@ fn draw_detail_table_2(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             Column::initial(100.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .column(
             Column::initial(100.0)
                 .at_least(40.0)
                 .resizable(true)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -321,7 +339,7 @@ fn draw_detail_table_path(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             Column::initial(300.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -331,7 +349,7 @@ fn draw_detail_table_path(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             });
 
             let line_count = state.selected_csv_record.path.matches(">").count();
-            body.row(25.0.mul(line_count as f32), |mut row| {
+            body.row(30.0, |mut row| {
                 row.col(|ui| {
                     draw_detail_multi_line_value(ui, &state.selected_csv_record.path, false, " >");
                 });
@@ -351,7 +369,7 @@ fn draw_detail_table_requirements(ui: &mut egui::Ui, state: &mut DubiousDubsStat
             Column::initial(300.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -365,7 +383,7 @@ fn draw_detail_table_requirements(ui: &mut egui::Ui, state: &mut DubiousDubsStat
                 .requirements
                 .matches("~if")
                 .count();
-            body.row(25.0.mul(line_count as f32), |mut row| {
+            body.row(30.0, |mut row| {
                 row.col(|ui| {
                     draw_detail_multi_line_value(
                         ui,
@@ -390,7 +408,7 @@ fn draw_detail_table_sets(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             Column::initial(300.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -400,7 +418,7 @@ fn draw_detail_table_sets(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             });
 
             let line_count = state.selected_csv_record.sets.matches("~set").count();
-            body.row(25.0.mul(line_count as f32), |mut row| {
+            body.row(30.0, |mut row| {
                 row.col(|ui| {
                     draw_detail_multi_line_value(
                         ui,
@@ -425,7 +443,7 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
             Column::initial(1225.0)
                 .at_least(40.0)
                 .resizable(false)
-                .clip(true),
+                .clip(false),
         )
         .body(|mut body| {
             body.row(30.0, |mut row| {
@@ -434,14 +452,13 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
                 });
             });
 
-            let line_count = state.selected_csv_record.line_to_dub.matches("\n").count();
-            body.row(25.0.mul(line_count as f32), |mut row| {
+            
+            body.row(30.0, |mut row| {
                 row.col(|ui| {
-                    draw_detail_multi_line_value(
+                    draw_dub_line_multi_line_value(
                         ui,
                         &state.selected_csv_record.line_to_dub,
-                        false,
-                        "\n",
+                        false
                     );
                 });
             });

@@ -44,7 +44,17 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
             "Displaying {} of {}",
             state.filtered_csv_records.len(),
             state.csv_records.len()
-        ))
+        ));
+
+        let layout = egui::Layout::right_to_left(egui::Align::RIGHT);
+
+        ui.with_layout(layout, |ui| {
+            
+            let slider = ui.add(egui::Slider::new(&mut state.volume, 0.0..=2.0).text("Volume:"));
+            if slider.changed(){
+                state.player.set_volume(state.volume);
+            }
+        })
     });
     ui.add_space(10.0); 
 
@@ -58,101 +68,103 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                 .id_salt("csvtable")
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
                 .vscroll(true)
-                .max_scroll_height(200.0)
+                .max_scroll_height(300.0)
                 .column(
                     Column::initial(200.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(200.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .column(
                     Column::initial(80.0)
                         .at_least(40.0)
                         .resizable(true)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
+                        .auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .header(20.0, |mut header| {
@@ -353,12 +365,17 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                         });
 
                         let is_clicked: bool = row.response().clicked();
+                        let is_double_clicked: bool = row.response().double_clicked();
                         is_hovered = row.response().hovered();
 
                         if is_clicked {
                             state.selected_dub_id = rec.dub_id.to_string();
                             state.selected_csv_record = rec.clone();
                             state.selected_attempt_filename.clear();
+                        }
+
+                        if is_double_clicked{
+                            start_audio_playback(state, 1, false);
                         }
 
                         if is_hovered {
