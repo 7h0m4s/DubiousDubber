@@ -65,6 +65,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
             TableBuilder::new(ui)
                 .striped(true)
                 .sense(egui::Sense::click())
+                .auto_shrink([false, false])
                 .id_salt("csvtable")
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
                 .vscroll(true)
@@ -112,59 +113,10 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                         .clip(true),
                 )
                 .column(
-                    Column::initial(80.0)
+                    Column::remainder()
                         .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
-                        .clip(true),
-                )
-                .column(
-                    Column::initial(80.0)
-                        .at_least(40.0)
-                        .resizable(true)
-                        .auto_size_this_frame(state.is_first_frame)
+                        //.resizable(true)
+                        //.auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
                 .header(20.0, |mut header| {
@@ -188,27 +140,6 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                     });
                     header.col(|ui| {
                         ui.heading("Line To Dub");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Requirements");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Path");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Level");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Is Dream");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Is Flirt");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Is Groundhog");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Has Battle");
                     });
                 })
                 .body(|mut body| {
@@ -289,78 +220,8 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_selected,
                                 is_hovered,
                                 is_committed,
-                                true,
-                                &rec.line_to_dub,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.requirements,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.path,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.level,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.is_dream,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.is_flirt,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.is_groundhog,
-                            );
-                        });
-                        row.col(|ui| {
-                            ui_lib::format_table_cell(
-                                ui,
-                                is_selected,
-                                is_hovered,
-                                is_committed,
-                                true,
-                                &rec.has_battle,
+                                false,
+                                &rec.line_to_dub.replace("\n", ""),
                             );
                         });
 
