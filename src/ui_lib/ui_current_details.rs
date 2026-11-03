@@ -455,11 +455,14 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
             
             body.row(30.0, |mut row| {
                 row.col(|ui| {
-                    draw_dub_line_multi_line_value(
+
+                        
+                            draw_dub_line_multi_line_value(
                         ui,
                         &state.selected_csv_record.line_to_dub,
                         false
-                    );
+                            );
+
                 });
             });
         });

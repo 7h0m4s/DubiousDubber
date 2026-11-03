@@ -2,7 +2,7 @@ use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
 use crate::csv_lib::CsvRecord;
-use crate::file_lib::{get_current_attempt_files};
+use crate::file_lib::get_current_attempt_files;
 use crate::{CurrentMode, DubiousDubsState, csv_lib};
 use anyhow::Error;
 use eframe::egui::Role::CheckBox;
@@ -18,6 +18,8 @@ mod ui_csv_table;
 mod ui_current_details;
 
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
+
+    //ui.set_visuals(egui::Visuals::light());
     if state.enable_top {
         egui::Panel::top("gen_top").resizable(true).show(ui, |ui| {
             let file_menu_items = vec![
@@ -38,12 +40,29 @@ pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
         });
     }
 
+    // show bottom first so it has first dibs on space
+    egui::Panel::bottom("gen_bottom")
+    .resizable(false)
+    .default_size(10.0)
+    .show(ui, |ui| {
+        egui::Frame::default()
+        .fill(Color32::TRANSPARENT)
+        .inner_margin(10.0)
+        .show(ui, |ui|{
+            ui_bottom_buttons::draw_bottom_buttons(ui, state)
+            .expect("Failed to render bottom buttons.");
+        });
+        
+    });
+
     egui::CentralPanel::default().show(ui, |ui| {
         // let canvas = egui::Rect::from_min_size(ui.min_rect().min, egui::vec2(700.0, 600.0));
         // let _ = ui.allocate_painter(canvas.size(), egui::Sense::hover());
 
         generate_center_ui_elements(ui, state).expect("TODO: panic message");
     });
+
+
 }
 
 pub fn generate_center_ui_elements(
@@ -51,19 +70,17 @@ pub fn generate_center_ui_elements(
     state: &mut DubiousDubsState,
 ) -> Result<(), anyhow::Error> {
     StripBuilder::new(ui)
-        .size(Size::exact(235.0))
+        .size(Size::exact(state.ui_csv_table_height))
         .size(Size::remainder())
-        .size(Size::exact(130.0))
         .vertical(|mut strip| {
             strip.cell(|ui| {
-                
+                ui.set_min_height(state.ui_csv_table_height);
+                //ui.add(egui::DragValue::new(&mut state.ui_csv_table_height));
                 ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
                 ui.add_space(10.0);
-                ui.separator();
-                ui.add_space(10.0);
             });
-            strip.strip(|strip_builder|{
-                    strip_builder
+            strip.strip(|strip_builder| {
+                strip_builder
                     .size(Size::exact(400.0))
                     .size(Size::remainder())
                     .clip(true)
@@ -72,18 +89,13 @@ pub fn generate_center_ui_elements(
                             ui_attempt_file_table::draw_attempt_file_table(ui, state)
                                 .expect("AttemptTable");
                         });
-                        
+
                         horizontal_strip.cell(|ui| {
                             ui_current_details::draw_current_details(ui, state);
                         });
                     });
-                });
-            strip.cell(|ui| {
-                ui_bottom_buttons::draw_bottom_buttons(ui, state).expect("Failed to render bottom buttons.");
             });
-        
         });
-
 
     // StripBuilder::new(ui)
     //     .size(Size::remainder())
@@ -106,8 +118,6 @@ pub fn generate_center_ui_elements(
 
     Ok(())
 }
-
-
 
 fn draw_gridcell_text(ui: &mut egui::Ui, label: &str, text: &str) {
     ui.horizontal(|ui| {
@@ -179,7 +189,14 @@ fn draw_gridcell_checkbox(ui: &mut egui::Ui, label: &str, value: bool) {
     });
 }
 
-fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, is_committed: bool, is_centered:bool, text: &String) {
+fn format_table_cell(
+    ui: &mut egui::Ui,
+    is_selected: bool,
+    is_hovered: bool,
+    is_committed: bool,
+    is_centered: bool,
+    text: &String,
+) {
     let mut styled_text: RichText;
     if is_selected {
         //ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::DARK_GREEN);
@@ -195,13 +212,13 @@ fn format_table_cell(ui: &mut egui::Ui, is_selected: bool, is_hovered: bool, is_
         styled_text = styled_text.italics().color(Color32::LIGHT_GREEN);
     }
 
-    let layout = if is_centered{
+    let layout = if is_centered {
         egui::Layout::centered_and_justified(egui::Direction::TopDown)
     } else {
         egui::Layout::left_to_right(egui::Align::Center)
     };
 
-    ui.with_layout(layout, |ui| {ui.add(egui::Label::new(styled_text).selectable(false))});
-
-    
+    ui.with_layout(layout, |ui| {
+        ui.add(egui::Label::new(styled_text).selectable(false))
+    });
 }

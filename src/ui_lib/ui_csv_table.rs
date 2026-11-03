@@ -7,7 +7,7 @@ use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
 use anyhow::Error;
 use eframe::egui::Role::CheckBox;
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, IdSalt, Layout, Stroke, text_edit, vec2};
+use eframe::egui::{self, IdSalt, Layout, Sense, Stroke, text_edit, vec2};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::fmt::Alignment;
@@ -69,7 +69,9 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                 .id_salt("csvtable")
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
                 .vscroll(true)
-                .max_scroll_height(300.0)
+            
+                // .max_scroll_height(300.0)
+                .max_scroll_height(f32::INFINITY)
                 .column(
                     Column::initial(200.0)
                         .at_least(40.0)
@@ -245,5 +247,16 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                     });
                 });
         });
+
+        let drag_handle = ui.allocate_exact_size(vec2(ui.available_width(), 5.0), Sense::drag()).1;
+
+        if drag_handle.hovered() || drag_handle.dragged(){
+            ui.set_cursor_icon(egui::CursorIcon::ResizeVertical);
+        }
+        if drag_handle.dragged(){
+            state.ui_csv_table_height = state.ui_csv_table_height + drag_handle.drag_delta().y;
+        }
+        //state.ui_csv_table_height = state.ui_csv_table_height.clamp(200.0, (ui.available_height() * 0.8).max(201.0));
+
     Ok(())
 }

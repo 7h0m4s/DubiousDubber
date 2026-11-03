@@ -26,6 +26,7 @@ struct DubiousDubsState {
     sel_13: usize,
     is_first_frame:bool,
     volume: f32,
+    ui_csv_table_height: f32,    
     current_mode: CurrentMode,
     attempt_directory: String,
     commit_directory: String,
@@ -48,7 +49,7 @@ struct DubiousDubsState {
 
     committed_dub_id_lookup: FastHashSet<String>,
 
-    is_instant_replay_enabled: bool    
+    is_instant_replay_enabled: bool,
 
 }
 
@@ -76,6 +77,7 @@ impl Default for DubiousDubsState {
             sel_13: 0,
             is_first_frame: true,
             volume: 1.0,
+            ui_csv_table_height: 300.0,
             current_mode: CurrentMode::Idle,
             attempt_directory: "Attempts".to_owned(),
             commit_directory: "Commit".to_owned(),

@@ -26,15 +26,15 @@ pub fn draw_bottom_buttons(
         let record_button_styled_text = RichText::new(record_button_text)
             .size(24.0)
             .color(Color32::WHITE);
-        let record_button = egui::Button::new(record_button_styled_text)
+        let record_button = ui.add_enabled(state.current_mode != CurrentMode::Playback, egui::Button::new(record_button_styled_text)
             .fill(if state.current_mode == CurrentMode::Recording {
                 Color32::DARK_RED
             } else {
                 Color32::DARK_GREEN
             })
-            .min_size(Vec2::new(100.0, 50.0));
+            .min_size(Vec2::new(110.0, 50.0)));
 
-        if ui.add(record_button).clicked() || ui.input(|i| i.key_pressed(egui::Key::Z)) {
+        if record_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::Z)) {
             if state.current_mode == CurrentMode::Recording {
                 stop_audio_recording(state).expect("Error when stopping recording");
                 if state.is_instant_replay_enabled {
@@ -46,6 +46,8 @@ pub fn draw_bottom_buttons(
                 start_audio_recording(state).expect("Error when starting recording");
             }
         }
+
+        
 
         // Keep repainting if we are waiting for playback to finish
         if (state.current_mode == CurrentMode::Playback) {
@@ -65,19 +67,19 @@ pub fn draw_bottom_buttons(
             "(X) Start playback"
         };
         let playback_button_styled_text = RichText::new(playback_button_text)
-            .size(28.0)
+            .size(24.0)
             .color(Color32::WHITE);
-        let playback_button = egui::Button::new(playback_button_styled_text)
+        let playback_button = ui.add_enabled(state.current_mode != CurrentMode::Recording ,egui::Button::new(playback_button_styled_text)
             .fill(if state.current_mode == CurrentMode::Playback {
                 Color32::DARK_RED
             } else {
                 Color32::DARK_GREEN
             })
-            .min_size(Vec2::new(100.0, 50.0));
+            .min_size(Vec2::new(110.0, 50.0)));
 
-        if ui.add(playback_button).clicked() || ui.input(|i| i.key_pressed(egui::Key::X)) {
+        if playback_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::X)) {
             if state.current_mode == CurrentMode::Playback {
-                stop_audio_playback(state).expect("Error when stopping playback");
+                stop_audio_playback(state).expect("Error when stopping Playback");
             } else {
                 start_audio_playback(state, 2, true);
                 ui.ctx()
@@ -86,16 +88,13 @@ pub fn draw_bottom_buttons(
         }
 
         ui.add_space(10.0);
-        ui.checkbox(&mut state.is_instant_replay_enabled, "Instant Replay");
-
-        ui.add_space(50.0);
 
         let commit_selected_button_styled_text = RichText::new("(C) Commit & Next")
-            .size(26.0)
+            .size(24.0)
             .color(Color32::WHITE);
 
         let mut commit_selected_button =
-            egui::Button::new(commit_selected_button_styled_text).min_size(Vec2::new(70.0, 20.0));
+            egui::Button::new(commit_selected_button_styled_text).min_size(Vec2::new(200.0, 50.0));
 
         if (ui
             .add_enabled(
@@ -128,6 +127,11 @@ pub fn draw_bottom_buttons(
                 }
             }
         }
+
+        ui.add_space(10.0);
+        ui.checkbox(&mut state.is_instant_replay_enabled, "Instant Replay");
+
+        ui.add_space(50.0);
     });
 
     Ok(())
