@@ -8,7 +8,7 @@ use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
 use anyhow::Error;
 use eframe::egui::Role::{CheckBox, Math};
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
+use eframe::egui::{self, vec2, IdSalt, Layout, Margin, Stroke};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::env::consts;
@@ -17,7 +17,7 @@ use std::ops::Mul;
 
 pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
     StripBuilder::new(ui)
-        .size(Size::exact(10.0))
+        .size(Size::exact(260.0))
         .size(Size::remainder())
         .vertical(|mut vert_strip| {
             vert_strip.strip(|strip_builder| {
@@ -31,7 +31,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         // 1st Column
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(4)
+                                .inner_margin(egui::Margin::symmetric(4,0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_1(ui, state);
@@ -41,7 +41,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         // 2nd Column
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(4)
+                                .inner_margin(egui::Margin::symmetric(4,0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_2(ui, state);
@@ -50,7 +50,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(4)
+                                .inner_margin(egui::Margin::symmetric(4,0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_sets(ui, state);
@@ -59,7 +59,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(4)
+                                .inner_margin(egui::Margin::symmetric(4,0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_path(ui, state);
@@ -67,7 +67,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         });
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(4)
+                                .inner_margin(egui::Margin::symmetric(4,0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_requirements(ui, state);
@@ -81,7 +81,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                 ui.separator();
                 ui.add_space(10.0);
                 egui::Frame::canvas(ui.style_mut())
-                    .inner_margin(4)
+                    .inner_margin(egui::Margin::symmetric(4,0))
                     .corner_radius(5)
                     .show(ui, |ui| {
                         draw_detail_table_line_to_dub(ui, state);

@@ -1,18 +1,9 @@
-use crate::audio_lib::{
-    start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
-};
-use crate::csv_lib::{parse_csv_records, CsvRecord, initialize_csv_state};
-use crate::file_lib::get_current_attempt_files;
 use crate::{CurrentMode, DubiousDubsState, csv_lib};
-use anyhow::{anyhow, Error};
-use eframe::egui::Role::CheckBox;
-use eframe::egui::scroll_area::ScrollBarVisibility;
 use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::fmt::Alignment;
-use rfd::FileDialog;
 use crate::ui_lib::ui_menu::draw_menu;
+use crate::ui_lib::ui_upper_controls::draw_upper_controls;
 
 mod ui_attempt_file_table;
 mod ui_bottom_buttons;
@@ -22,12 +13,11 @@ mod ui_upper_controls;
 mod ui_menu;
 
 
-
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
-    //ui.set_visuals(egui::Visuals::light());
+    ui.spacing_mut().item_spacing.y = -0.0;
     if state.enable_top {
-        egui::Panel::top("gen_top").resizable(true).show(ui, |ui| {
+        egui::Panel::top("gen_top").resizable(false).show(ui, |ui| {
             draw_menu(ui, state)
         });
     }
@@ -44,13 +34,9 @@ pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             ui_bottom_buttons::draw_bottom_buttons(ui, state)
             .expect("Failed to render bottom buttons.");
         });
-        
     });
 
     egui::CentralPanel::default().show(ui, |ui| {
-        // let canvas = egui::Rect::from_min_size(ui.min_rect().min, egui::vec2(700.0, 600.0));
-        // let _ = ui.allocate_painter(canvas.size(), egui::Sense::hover());
-
         generate_center_ui_elements(ui, state).expect("TODO: panic message");
     });
 
@@ -68,8 +54,9 @@ pub fn generate_center_ui_elements(
             strip.cell(|ui| {
                 ui.set_min_height(state.ui_csv_table_height);
                 //ui.add(egui::DragValue::new(&mut state.ui_csv_table_height));
-                
-                ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
+
+                draw_upper_controls(ui,state);
+                ui_csv_table::draw_csv_table(ui, state);
                 ui.add_space(10.0);
             });
             strip.strip(|strip_builder| {
@@ -81,7 +68,6 @@ pub fn generate_center_ui_elements(
                         horizontal_strip.cell(|ui| {
                             ui.set_clip_rect(ui.max_rect());
                             ui_attempt_file_table::draw_attempt_file_table(ui, state)
-                                .expect("AttemptTable");
                         });
 
                         horizontal_strip.cell(|ui| {
@@ -91,97 +77,28 @@ pub fn generate_center_ui_elements(
             });
         });
 
-    // StripBuilder::new(ui)
-    //     .size(Size::remainder())
-    //     .size(Size::exact(400.0))
-    //     .clip(true)
-    //     .horizontal(|mut strip| {
-    //         strip.cell(|ui| {
-    //             draw_current_details(ui, state);
-    //         });
-    //         strip.cell(|ui| {
-    //             ui_attempt_file_table::draw_attempt_file_table(ui, state).expect("AttemptTable");
-    //         });
-    //     });
-
-    // ui.add_space(5.0);
-    // ui.separator();
-    // ui.add_space(5.0);
-
-    // ui_bottom_buttons::draw_bottom_buttons(ui, state)?;
-
     Ok(())
 }
 
-fn draw_gridcell_text(ui: &mut egui::Ui, label: &str, text: &str) {
-    ui.horizontal(|ui| {
-        egui::Frame::canvas(ui.style_mut())
-            .inner_margin(4)
-            .corner_radius(5)
-            .show(ui, |ui| {
-                ui.label(label);
-                let styled_text: RichText = RichText::new(text).strong();
-                ui.add(egui::Label::new(styled_text).wrap_mode(egui::TextWrapMode::Wrap))
-            });
-    });
-}
-fn draw_gridcell_multiline_text(ui: &mut egui::Ui, label: &str, text: &str) {
-    let mut modified_text = text.to_string();
-    ui.horizontal(|ui| {
-        egui::Frame::canvas(ui.style_mut())
-            .inner_margin(4)
-            .corner_radius(5)
-            .show(ui, |ui| {
-                ui.label(label);
-                let styled_text: RichText = RichText::new(text).strong().size(20.0);
-                ui.add(egui::Label::new(styled_text).wrap_mode(egui::TextWrapMode::Wrap))
-            });
-    });
+pub fn set_display_visuals(ui: &mut egui::Ui, state: &mut DubiousDubsState){
+    if state.is_light_mode {
+        ui.set_visuals(egui::Visuals::light());
+        ui.ctx().global_style_mut(|s|{
+            s.visuals.panel_fill = Color32::from_gray(210);
+            s.visuals.extreme_bg_color = Color32::from_gray(230);
+            s.visuals.faint_bg_color = Color32::from_gray(220);
+        });
+    } else {
+        ui.set_visuals(egui::Visuals::dark());
+        ui.ctx().global_style_mut(|s|{
+            s.visuals.panel_fill = Color32::from_gray(45);
+            s.visuals.extreme_bg_color = Color32::from_gray(25);
+            s.visuals.faint_bg_color = Color32::from_gray(35);
+        });
+    }
 }
 
-fn draw_gridcell_sets_text(ui: &mut egui::Ui, label: &str, text: &str) {
-    let mut modified_text = text.to_string();
-    modified_text = modified_text.replace(", ~set ", "\n").replace("~set ", "");
-    draw_gridcell_text(ui, label, &modified_text.to_string());
-}
 
-fn draw_gridcell_requirements_text(ui: &mut egui::Ui, label: &str, text: &str) {
-    let mut modified_text = text.to_string();
-    modified_text = modified_text.replace(", ~if ", "\n~if");
-    draw_gridcell_text(ui, label, &modified_text.to_string());
-}
-
-fn draw_gridcell_path_text(ui: &mut egui::Ui, label: &str, text: &str) {
-    let mut modified_text = text.to_string();
-    modified_text = modified_text.replace(" >", "\n>").replacen("\n", "", 1);
-    draw_gridcell_text(ui, label, &modified_text.to_string());
-}
-
-fn draw_gridcell_checkbox(ui: &mut egui::Ui, label: &str, value: bool) {
-    ui.horizontal(|ui| {
-        egui::Frame::canvas(ui.style_mut())
-            .inner_margin(4)
-            .corner_radius(5)
-            .show(ui, |ui| {
-                let mut checkbox_mut_value = value;
-                let label_response = ui.label(label);
-                let text: &str;
-
-                if value {
-                    text = "True";
-                } else {
-                    text = "False";
-                }
-                let mut styled_text: RichText = RichText::new(text).strong();
-                if value {
-                    styled_text = styled_text.color(Color32::GREEN);
-                } else {
-                    styled_text = styled_text.color(Color32::RED);
-                }
-                ui.add(egui::Label::new(styled_text).wrap_mode(egui::TextWrapMode::Wrap))
-            });
-    });
-}
 
 fn format_table_cell(
     ui: &mut egui::Ui,
@@ -190,20 +107,21 @@ fn format_table_cell(
     is_committed: bool,
     is_centered: bool,
     text: &String,
+    is_light_mode: bool,
 ) {
     let mut styled_text: RichText;
     if is_selected {
         //ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::DARK_GREEN);
-        styled_text = RichText::new(text).color(Color32::WHITE);
+        styled_text = RichText::new(text).color(if is_light_mode {Color32::BLACK} else {Color32::WHITE}).strong();
     } else if is_hovered {
         //ui.painter().rect_filled(ui.max_rect(), 0.2, Color32::LIGHT_BLUE);
         styled_text = RichText::new(text).strong();
     } else {
-        styled_text = RichText::new(text).color(Color32::LIGHT_GRAY);
+        styled_text = RichText::new(text).color(if is_light_mode {Color32::BLACK} else {Color32::LIGHT_GRAY});
     }
 
     if is_committed {
-        styled_text = styled_text.italics().color(Color32::LIGHT_GREEN);
+        styled_text = styled_text.italics().color(if is_light_mode {Color32::DARK_GREEN} else {Color32::LIGHT_GREEN});
     }
 
     let layout = if is_centered {

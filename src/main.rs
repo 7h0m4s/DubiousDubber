@@ -9,11 +9,13 @@ use eframe::egui::Widget;
 use egui_notify::Toasts;
 use rfd::FileDialog;
 use crate::csv_lib::initialize_csv_state;
+use crate::ui_lib::set_display_visuals;
 
 mod audio_lib;
 mod csv_lib;
 mod file_lib;
 mod ui_lib;
+
 
 pub static CSV_FILEPATH: &str = "AllLinesDump.csv";
 
@@ -31,6 +33,7 @@ struct DubiousDubsState {
     enable_left: bool,
     enable_right: bool,
     is_first_frame:bool,
+    is_light_mode:bool,
     volume: f32,
     ui_csv_table_height: f32,
     ui_csv_table_min_height: f32,
@@ -94,6 +97,7 @@ impl Default for DubiousDubsState {
             enable_left: false,
             enable_right: false,
             is_first_frame: true,
+            is_light_mode: false,
             volume: 1.0,
             ui_csv_table_height: 300.0,
             ui_csv_table_min_height: 30.0,
@@ -139,6 +143,7 @@ impl Default for DubiousDubsApp {
         let mut this = Self {
             state: <DubiousDubsState>::default(),
         };
+
         initialize_csv_state(&mut this.state, None);
         this
     }
@@ -150,6 +155,9 @@ impl eframe::App for DubiousDubsApp {
         // Show Toasts
         self.state.toasts.show(ui);
 
+        if self.state.is_first_frame {
+            set_display_visuals(ui, &mut self.state);
+        }
 
         get_current_attempt_files(&mut self.state);
         get_current_commit_files(&mut self.state);
@@ -169,6 +177,7 @@ impl eframe::App for DubiousDubsApp {
         if self.state.is_first_frame && self.state.filtered_csv_records.len() > 0{
             self.state.selected_csv_record = self.state.filtered_csv_records[0].clone();
             self.state.selected_dub_id = self.state.selected_csv_record.dub_id.to_string();
+
         }
         
         
@@ -187,10 +196,11 @@ fn main() -> eframe::Result<()> {
             .with_min_inner_size((1974.0, 1000.0)),
         centered: true,
         ..eframe::NativeOptions::default()
+
     };
 
     eframe::run_native(
-        "Dubious Dub",
+        "Dubious Dubber",
         native_options,
         Box::new(|_cc| Ok(Box::new(DubiousDubsApp::default()))),
     )

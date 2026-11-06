@@ -15,8 +15,7 @@ use std::fmt::Alignment;
 pub fn draw_attempt_file_table(
     ui: &mut egui::Ui,
     state: &mut DubiousDubsState,
-) -> Result<(), Error> {
-    //ui_lib::draw_gridcell_text(ui, "Next Filename:", &state.next_attempt_filename, 100.0, 100.0);
+) {
 
     // Select last attempt filename if none selected
     if &state.selected_attempt_filename == "" && state.current_attempt_filenames.len() > 0 {
@@ -42,7 +41,7 @@ pub fn draw_attempt_file_table(
             state.current_attempt_filenames[state.current_attempt_filenames.len() - 1].to_string();
     }
     egui::Frame::canvas(ui.style_mut())
-        .inner_margin(4)
+        .inner_margin(egui::Margin::symmetric(4,0))
         .corner_radius(5)
         .show(ui, |ui| {
             let table_height = ui.available_height() * 0.9;
@@ -67,7 +66,7 @@ pub fn draw_attempt_file_table(
                         .resizable(true)
                         .clip(true),
                 )
-                .header(20.0, |mut header| {
+                .header(25.0, |mut header| {
                     header.col(|ui| {
                         ui.heading("Attempt ID");
                     });
@@ -93,6 +92,7 @@ pub fn draw_attempt_file_table(
                                 false,
                                 true,
                                 &row_id.to_string(),
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -103,6 +103,7 @@ pub fn draw_attempt_file_table(
                                 false,
                                 false,
                                 &rec.to_string(),
+                                state.is_light_mode,
                             );
                         });
 
@@ -118,11 +119,13 @@ pub fn draw_attempt_file_table(
                             state.selected_attempt_filename = rec.to_string();
                             if state.current_mode == CurrentMode::Playback {
                                 state.current_mode = CurrentMode::Idle;
-                                audio_lib::stop_audio_playback(state)
-                                    .expect("Error when stopping playback");
+                                stop_audio_playback(state)
+                                    .unwrap_or_else(|err| {
+                                        state.toasts.error(format!("{}", err));
+                                    });
                             } else {
                                 state.current_mode = CurrentMode::Playback;
-                                audio_lib::start_audio_playback(state, 2, true);
+                                start_audio_playback(state, 2, true);
                                 should_delay_repaint = true;
                             }
                         }
@@ -134,6 +137,4 @@ pub fn draw_attempt_file_table(
                 });
         });
         ui.add_space(30.0);
-
-    Ok(())
 }

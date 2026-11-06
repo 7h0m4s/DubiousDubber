@@ -14,45 +14,10 @@ use std::fmt::Alignment;
 use std::ops::Div;
 use std::rc::Rc;
 
-pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(), Error> {
-
-    ui.add_space(10.0); 
-    ui.horizontal(|ui| {
-        ui.label("Filter: ");
-        let csv_filter_box = ui.text_edit_singleline(&mut state.csv_filter);
-
-        ui.add_space(20.0);
-        ui.checkbox(
-            &mut state.is_csv_filtered_by_uncommitted,
-            "Filter By Uncommitted",
-        );
-        ui.add_space(20.0);
-        ui.label(format!(
-            "Displaying {} of {}",
-            state.filtered_csv_records.len(),
-            state.csv_records.len()
-        ));
-
-        // ui.add_space(20.0);
-        // ui.label(format!(
-        //     "Current Screen Width: {}",
-        //     ui.content_rect().width()
-        // ));
-
-        let layout = egui::Layout::right_to_left(egui::Align::RIGHT);
-
-        ui.with_layout(layout, |ui| {
-            
-            let slider = ui.add(egui::Slider::new(&mut state.volume, 0.0..=2.0).text("Volume:"));
-            if slider.changed(){
-                state.player.as_ref().map(|player| player.set_volume(state.volume));
-            }
-        })
-    });
-    ui.add_space(10.0); 
+pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
 
     egui::Frame::canvas(ui.style_mut())
-        .inner_margin(4)
+        .inner_margin(egui::Margin::symmetric(4,0))
         .corner_radius(3)
         .show(ui, |ui| {
             TableBuilder::new(ui)
@@ -114,7 +79,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                         //.auto_size_this_frame(state.is_first_frame)
                         .clip(true),
                 )
-                .header(20.0, |mut header| {
+                .header(25.0, |mut header| {
                     header.col(|ui| {
                         ui.heading("Dub ID");
                     });
@@ -142,7 +107,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
 
                     body.rows(30.0, state.filtered_csv_records.len(), |mut row| {
                         let rec = &state.filtered_csv_records[row.index()];
-                        let mut is_selected = rec.dub_id.eq(&state.selected_dub_id);
+                        let is_selected = rec.dub_id.eq(&state.selected_dub_id);
                         let mut is_hovered = row.index().eq(&state.hovered_dub_index);
                         let is_committed = state.committed_dub_id_lookup.contains(&rec.dub_id);
 
@@ -157,6 +122,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 false,
                                 &rec.dub_id,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -167,6 +133,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 false,
                                 &rec.choice_id,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -177,6 +144,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 false,
                                 &rec.character,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -187,6 +155,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 true,
                                 &rec.characters,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -197,6 +166,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 true,
                                 &rec.button_text,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -207,6 +177,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 true,
                                 &rec.sets,
+                                state.is_light_mode,
                             );
                         });
                         row.col(|ui| {
@@ -217,6 +188,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                                 is_committed,
                                 false,
                                 &rec.line_to_dub.replace("\n", ""),
+                                state.is_light_mode,
                             );
                         });
 
@@ -260,5 +232,5 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
     };
     ui.painter().hline(drag_handle_rect.x_range(), drag_handle_rect.center().y, stroke);
 
-    Ok(())
+
 }
