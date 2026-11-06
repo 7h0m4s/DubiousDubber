@@ -4,18 +4,26 @@ use crate::ui_lib::set_display_visuals;
 
 pub fn draw_upper_controls(ui: &mut egui::Ui, state: &mut DubiousDubsState){
     ui.add_space(10.0);
+    
+    
     ui.horizontal(|ui| {
         ui.label("Filter: ");
         let csv_filter_box = ui.text_edit_singleline(&mut state.csv_filter);
-
+        csv_filter_box.changed().then(|| state.has_filtered_csv_changed = true);
+        state.is_filter_box_in_focus = csv_filter_box.has_focus();
+        
         ui.add_space(20.0);
         ui.checkbox(
             &mut state.is_csv_filtered_by_uncommitted,
             "Filter By Uncommitted",
-        );
+        ).changed().then(|| state.has_filtered_csv_changed = true);
+        
+        
         ui.add_space(10.0);
         ui.separator();
         ui.add_space(10.0);
+        
+        
         ui.label(format!(
             "Displaying {} of {}",
             state.filtered_csv_records.len(),

@@ -45,6 +45,7 @@ struct DubiousDubsState {
     player: Option<rodio::Sink>,
     player_out_stream: Option<OutputStream>, // do not get rid of
     csv_records: Vec<Rc<CsvRecord>>,
+    has_filtered_csv_changed: bool,
     filtered_csv_records: Vec<Rc<CsvRecord>>,
     selected_csv_record: Rc<CsvRecord>,
     csv_filter: String,
@@ -61,6 +62,7 @@ struct DubiousDubsState {
     committed_dub_id_lookup: FastHashSet<String>,
 
     is_instant_replay_enabled: bool,
+    is_filter_box_in_focus:bool,
     toasts: Toasts,
 }
 
@@ -108,6 +110,7 @@ impl Default for DubiousDubsState {
             recorder: Recorder::default(),
             player: sink,
             player_out_stream: stream_handle,
+            has_filtered_csv_changed: true,
             filtered_csv_records: Vec::<Rc<CsvRecord>>::default(), // run before csv_records
             csv_records: Vec::<Rc<CsvRecord>>::default(),
             selected_csv_record: Rc::default(),
@@ -125,6 +128,7 @@ impl Default for DubiousDubsState {
             committed_dub_id_lookup: FastHashSet::default(),
 
             is_instant_replay_enabled: false,
+            is_filter_box_in_focus: false,
             toasts: toasts,
         }
     }
@@ -154,6 +158,7 @@ impl eframe::App for DubiousDubsApp {
     fn ui(&mut self, ui: &mut Ui, frame: &mut Frame) {
         // Show Toasts
         self.state.toasts.show(ui);
+        ui.set_zoom_factor(1.10);
 
         if self.state.is_first_frame {
             set_display_visuals(ui, &mut self.state);
@@ -162,17 +167,19 @@ impl eframe::App for DubiousDubsApp {
         get_current_attempt_files(&mut self.state);
         get_current_commit_files(&mut self.state);
         
-        
-        self.state.filtered_csv_records = self.state
-            .csv_records
-            .iter()
-            .filter(|r| {
-                !(self.state.is_csv_filtered_by_uncommitted
-                    && self.state.committed_dub_id_lookup.contains(&r.dub_id))
-            })
-            .filter(|r| self.state.csv_filter.is_empty() || r.dub_id.contains(&self.state.csv_filter))
-            .cloned()
-            .collect();
+        if(self.state.has_filtered_csv_changed || self.state.is_first_frame) {
+            self.state.filtered_csv_records = self.state
+                .csv_records
+                .iter()
+                .filter(|r| {
+                    !(self.state.is_csv_filtered_by_uncommitted
+                        && self.state.committed_dub_id_lookup.contains(&r.dub_id))
+                })
+                .filter(|r| self.state.csv_filter.is_empty() || r.dub_id.contains(&self.state.csv_filter))
+                .cloned()
+                .collect();
+            self.state.has_filtered_csv_changed = false;
+        }
 
         if self.state.is_first_frame && self.state.filtered_csv_records.len() > 0{
             self.state.selected_csv_record = self.state.filtered_csv_records[0].clone();

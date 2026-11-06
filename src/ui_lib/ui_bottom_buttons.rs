@@ -49,7 +49,8 @@ pub fn draw_bottom_buttons(
                 .min_size(Vec2::new(110.0, 50.0)),
         );
 
-        if record_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::Z)) {
+        if record_button.clicked() || (ui.input(|i| i.key_pressed(egui::Key::Z) && !state.is_filter_box_in_focus)) {
+            state.has_filtered_csv_changed = true;
             if state.current_mode == CurrentMode::Recording {
                 stop_audio_recording(state).expect("Error when stopping recording");
                 if state.is_instant_replay_enabled {
@@ -108,7 +109,8 @@ pub fn draw_bottom_buttons(
                 .min_size(Vec2::new(110.0, 50.0)),
         );
 
-        if playback_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::X)) {
+        if playback_button.clicked() || (ui.input(|i| i.key_pressed(egui::Key::X) && !state.is_filter_box_in_focus)) {
+            state.has_filtered_csv_changed = true;
             if state.current_mode == CurrentMode::Playback {
                 stop_audio_playback(state).expect("Error when stopping Playback");
             } else {
@@ -142,10 +144,11 @@ pub fn draw_bottom_buttons(
                 commit_selected_button,
             )
             .clicked()
-            || ui.input(|i| i.key_pressed(egui::Key::C)))
+            || (ui.input(|i| i.key_pressed(egui::Key::C)) && !state.is_filter_box_in_focus))
             && state.current_mode == CurrentMode::Idle
             && !state.selected_attempt_filename.is_empty()
         {
+            state.has_filtered_csv_changed = true;
             file_lib::commit_selected_attempt_file(state).expect("failed to copy file");
             let current_csv_selection_index = state
                 .filtered_csv_records
