@@ -56,7 +56,7 @@ pub fn draw_bottom_buttons(
         }
 
         // Check playback status
-        if (state.player.empty() || state.player.is_paused())
+        if state.player.as_ref().is_some_and(|player| player.empty() || player.is_paused())
             && state.current_mode == CurrentMode::Playback
         {
             state.current_mode = CurrentMode::Idle;

@@ -2,8 +2,10 @@ use std::error::Error;
 use std::io;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::str::FromStr;
 use csv::StringRecord;
 use serde::Deserialize;
+use crate::{DubiousDubsState, CSV_FILEPATH};
 
 //#[serde(rename_all = "PascalCase")]
 #[derive(Debug, Deserialize, Default, Clone)]
@@ -33,8 +35,8 @@ pub struct CsvRecord {
 
 
 
-pub fn parse_csv_records() -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
-    let mut rdr = csv::Reader::from_path("AllLinesDump.csv")?;
+pub fn parse_csv_records(csv_path: &PathBuf) -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
+    let mut rdr = csv::Reader::from_path(&csv_path)?;
     let mut csv_vec: Vec<Rc<CsvRecord>> = Vec::new();
     for result in rdr.deserialize() {
         let mut record: CsvRecord = result?;
@@ -48,7 +50,30 @@ pub fn parse_csv_records() -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
     Ok(csv_vec)
 }
 
+pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathBuf>){
 
+    state.csv_filter = String::default();
+    state.filtered_csv_records = Vec::<Rc<CsvRecord>>::default();
+    state.selected_csv_record = Rc::default();
+    state.selected_dub_id = String::default();
+    state.selected_attempt_filename = String::default();
+    state.current_attempt_filenames = Vec::<String>::default();
+    state.selected_attempt_filename = String::default();
+
+    let csv_filepath:PathBuf = if (path_buf.is_none()) {PathBuf::from_str(CSV_FILEPATH).unwrap_or_default()} else {path_buf.unwrap_or_default()};
+    let csv_results = parse_csv_records(&csv_filepath)
+        .map_err(|error| {state.toasts.error(error.to_string());})
+        .unwrap_or_default();
+
+    if !csv_results.is_empty() {
+        let rec = &csv_results[0];
+        state.selected_dub_id = rec.dub_id.to_string();
+        state.selected_csv_record = rec.clone();
+    }
+    state.csv_records = csv_results;
+
+    state.is_first_frame = true;
+}
 
 
 

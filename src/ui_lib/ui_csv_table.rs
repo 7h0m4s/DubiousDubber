@@ -11,24 +11,11 @@ use eframe::egui::{self, IdSalt, Layout, Sense, Stroke, text_edit, vec2};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::fmt::Alignment;
+use std::ops::Div;
 use std::rc::Rc;
 
 pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result<(), Error> {
-    state.filtered_csv_records = state
-        .csv_records
-        .iter()
-        .filter(|r| {
-            !(state.is_csv_filtered_by_uncommitted
-                && state.committed_dub_id_lookup.contains(&r.dub_id))
-        })
-        .filter(|r| state.csv_filter.is_empty() || r.dub_id.contains(&state.csv_filter))
-        .cloned()
-        .collect();
 
-    if state.is_first_frame && state.filtered_csv_records.len() > 0{
-        state.selected_csv_record = state.filtered_csv_records[0].clone();
-        state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
-    }
     ui.add_space(10.0); 
     ui.horizontal(|ui| {
         ui.label("Filter: ");
@@ -46,13 +33,19 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
             state.csv_records.len()
         ));
 
+        // ui.add_space(20.0);
+        // ui.label(format!(
+        //     "Current Screen Width: {}",
+        //     ui.content_rect().width()
+        // ));
+
         let layout = egui::Layout::right_to_left(egui::Align::RIGHT);
 
         ui.with_layout(layout, |ui| {
             
             let slider = ui.add(egui::Slider::new(&mut state.volume, 0.0..=2.0).text("Volume:"));
             if slider.changed(){
-                state.player.set_volume(state.volume);
+                state.player.as_ref().map(|player| player.set_volume(state.volume));
             }
         })
     });
@@ -69,7 +62,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                 .id_salt("csvtable")
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
                 .vscroll(true)
-            
+                .min_scrolled_height(state.ui_csv_table_min_height)
                 // .max_scroll_height(300.0)
                 .max_scroll_height(f32::INFINITY)
                 .column(
@@ -248,15 +241,24 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) -> Result
                 });
         });
 
-        let drag_handle = ui.allocate_exact_size(vec2(ui.available_width(), 5.0), Sense::drag()).1;
+    let (drag_handle_rect, drag_handle) = ui.allocate_exact_size(vec2(ui.available_width(), 5.0), Sense::drag());
 
-        if drag_handle.hovered() || drag_handle.dragged(){
-            ui.set_cursor_icon(egui::CursorIcon::ResizeVertical);
-        }
-        if drag_handle.dragged(){
-            state.ui_csv_table_height = state.ui_csv_table_height + drag_handle.drag_delta().y;
-        }
-        //state.ui_csv_table_height = state.ui_csv_table_height.clamp(200.0, (ui.available_height() * 0.8).max(201.0));
+    if drag_handle.hovered() || drag_handle.dragged(){
+        ui.set_cursor_icon(egui::CursorIcon::ResizeVertical);
+    }
+    if drag_handle.dragged(){
+        state.ui_csv_table_height += drag_handle.drag_delta().y;
+    }
+    let available_height = ui.clip_rect().height() * 0.5;
+    //let available_height:f32 = 0.8;
+    state.ui_csv_table_height = state.ui_csv_table_height.clamp(state.ui_csv_table_min_height, (available_height).max(0.1));
+
+    let stroke = if drag_handle.hovered() || drag_handle.dragged() {
+        ui.visuals().widgets.active.fg_stroke
+    } else {
+        ui.visuals().widgets.noninteractive.bg_stroke
+    };
+    ui.painter().hline(drag_handle_rect.x_range(), drag_handle_rect.center().y, stroke);
 
     Ok(())
 }

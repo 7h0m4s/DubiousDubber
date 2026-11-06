@@ -26,6 +26,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                     .size(Size::exact(200.0))
                     .size(Size::exact(300.0))
                     .size(Size::exact(300.0))
+                    .size(Size::exact(300.0))
                     .horizontal(|mut strip| {
                         // 1st Column
                         strip.cell(|ui| {
@@ -63,7 +64,8 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                                 .show(ui, |ui| {
                                     draw_detail_table_path(ui, state);
                                 });
-                            ui.add_space(10.0);
+                        });
+                        strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
                                 .inner_margin(4)
                                 .corner_radius(5)

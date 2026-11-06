@@ -2,13 +2,20 @@ use crate::{csv_lib::{CsvRecord, parse_csv_records}, file_lib::{get_current_atte
 use audio_recorder_rs::Recorder;
 use eframe::{Frame, egui, wgpu::naga::FastHashSet};
 use egui::Ui;
-use rodio::{OutputStream, source::Source};
-use std::{collections::{HashSet, hash_set}, path::{self, PathBuf}, rc::Rc};
+use rodio::{source::Source, OutputStream, Sink};
+use std::{collections::{HashSet, hash_set}, fmt, path::{self, PathBuf}, rc::Rc};
+use std::str::FromStr;
+use eframe::egui::Widget;
+use egui_notify::Toasts;
+use rfd::FileDialog;
+use crate::csv_lib::initialize_csv_state;
 
 mod audio_lib;
 mod csv_lib;
 mod file_lib;
 mod ui_lib;
+
+pub static CSV_FILEPATH: &str = "AllLinesDump.csv";
 
 #[derive(Debug, PartialEq)]
 enum CurrentMode {
@@ -17,22 +24,23 @@ enum CurrentMode {
     Playback,
 }
 
-// #[derive(Debug)]
+//#[derive(Debug)] // not needed with Debug implementation
 struct DubiousDubsState {
     enable_top: bool,
     enable_bottom: bool,
     enable_left: bool,
     enable_right: bool,
-    sel_13: usize,
     is_first_frame:bool,
     volume: f32,
-    ui_csv_table_height: f32,    
+    ui_csv_table_height: f32,
+    ui_csv_table_min_height: f32,
     current_mode: CurrentMode,
+    csv_filepath: PathBuf,
     attempt_directory: String,
     commit_directory: String,
     recorder: audio_recorder_rs::Recorder,
-    player: rodio::Sink,
-    player_out_stream: OutputStream, // do not get rid of
+    player: Option<rodio::Sink>,
+    player_out_stream: Option<OutputStream>, // do not get rid of
     csv_records: Vec<Rc<CsvRecord>>,
     filtered_csv_records: Vec<Rc<CsvRecord>>,
     selected_csv_record: Rc<CsvRecord>,
@@ -50,57 +58,70 @@ struct DubiousDubsState {
     committed_dub_id_lookup: FastHashSet<String>,
 
     is_instant_replay_enabled: bool,
+    toasts: Toasts,
+}
+
+impl fmt::Debug for DubiousDubsState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DubiousDubsState")
+            .field("player", &"Debug data not available")
+            .field("player_out_stream", &"Debug data not available")
+            .field("toasts", &"Debug data not available")
+        .finish()
+    }
 
 }
 
 impl Default for DubiousDubsState {
     fn default() -> Self {
-        let stream_handle = rodio::OutputStreamBuilder::open_default_stream().unwrap();
-        let sink = rodio::Sink::connect_new(&stream_handle.mixer());
-        let csv_results = parse_csv_records().unwrap();
+        let mut toasts = Toasts::default();
+        let stream_handle:Option<OutputStream> = match rodio::OutputStreamBuilder::open_default_stream()   {
+            Ok(stream_handle) => Some(stream_handle),
+            Err(error) => {
+                toasts.error(error.to_string());
+                None
+            }
+        };
 
-        let mut selected_dub_id = "".to_string();
-        let mut selected_csv_record = Rc::new(CsvRecord::default());
-        let selected_attempt_filename = "".to_string();
+        let sink:Option<Sink> = stream_handle
+            .as_ref()
+            .map(|stream_handle| rodio::Sink::connect_new(&stream_handle.mixer()));
 
-        if csv_results.len() > 0 {
-            let rec = &csv_results[0];
-            selected_dub_id = rec.dub_id.to_string();
-            selected_csv_record = rec.clone();
-        }
 
         Self {
             enable_top: true,
             enable_bottom: false,
             enable_left: false,
             enable_right: false,
-            sel_13: 0,
             is_first_frame: true,
             volume: 1.0,
             ui_csv_table_height: 300.0,
+            ui_csv_table_min_height: 30.0,
             current_mode: CurrentMode::Idle,
+            csv_filepath: CSV_FILEPATH.into(),
             attempt_directory: "Attempts".to_owned(),
             commit_directory: "Commit".to_owned(),
             recorder: Recorder::default(),
             player: sink,
             player_out_stream: stream_handle,
-            filtered_csv_records: csv_results.iter().cloned().collect(), // run before csv_records
-            csv_records: csv_results,
-            selected_csv_record: selected_csv_record,
+            filtered_csv_records: Vec::<Rc<CsvRecord>>::default(), // run before csv_records
+            csv_records: Vec::<Rc<CsvRecord>>::default(),
+            selected_csv_record: Rc::default(),
             csv_filter: "".to_owned(),
             is_csv_filtered_by_uncommitted: true,
-            selected_dub_id: selected_dub_id,
+            selected_dub_id: String::default(),
             hovered_dub_index: usize::MAX,
 
             current_attempt_filenames: vec![],
             next_attempt_filename: "".to_owned(),
             next_attempt_path: PathBuf::default(),
             hovered_attempt_filename: "".to_owned(),
-            selected_attempt_filename: selected_attempt_filename,
+            selected_attempt_filename: String::default(),
             
             committed_dub_id_lookup: FastHashSet::default(),
 
-            is_instant_replay_enabled: false
+            is_instant_replay_enabled: false,
+            toasts: toasts,
         }
     }
 }
@@ -115,18 +136,42 @@ pub struct DubiousDubsApp {
 
 impl Default for DubiousDubsApp {
     fn default() -> Self {
-        Self {
+        let mut this = Self {
             state: <DubiousDubsState>::default(),
-        }
+        };
+        initialize_csv_state(&mut this.state, None);
+        this
     }
 }
 
 impl eframe::App for DubiousDubsApp {
     // The update loop for the GUI
     fn ui(&mut self, ui: &mut Ui, frame: &mut Frame) {
+        // Show Toasts
+        self.state.toasts.show(ui);
+
 
         get_current_attempt_files(&mut self.state);
         get_current_commit_files(&mut self.state);
+        
+        
+        self.state.filtered_csv_records = self.state
+            .csv_records
+            .iter()
+            .filter(|r| {
+                !(self.state.is_csv_filtered_by_uncommitted
+                    && self.state.committed_dub_id_lookup.contains(&r.dub_id))
+            })
+            .filter(|r| self.state.csv_filter.is_empty() || r.dub_id.contains(&self.state.csv_filter))
+            .cloned()
+            .collect();
+
+        if self.state.is_first_frame && self.state.filtered_csv_records.len() > 0{
+            self.state.selected_csv_record = self.state.filtered_csv_records[0].clone();
+            self.state.selected_dub_id = self.state.selected_csv_record.dub_id.to_string();
+        }
+        
+        
         ui_lib::generated_ui_panels(ui, &mut self.state);
 
         if self.state.is_first_frame{
@@ -138,8 +183,8 @@ impl eframe::App for DubiousDubsApp {
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size((1700.0, 1000.0))
-            .with_min_inner_size((1700.0, 1000.0)),
+            .with_inner_size((1974.0, 1000.0))
+            .with_min_inner_size((1974.0, 1000.0)),
         centered: true,
         ..eframe::NativeOptions::default()
     };

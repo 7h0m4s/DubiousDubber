@@ -1,42 +1,34 @@
 use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
-use crate::csv_lib::CsvRecord;
+use crate::csv_lib::{parse_csv_records, CsvRecord, initialize_csv_state};
 use crate::file_lib::get_current_attempt_files;
 use crate::{CurrentMode, DubiousDubsState, csv_lib};
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use eframe::egui::Role::CheckBox;
 use eframe::egui::scroll_area::ScrollBarVisibility;
 use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
 use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
 use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
 use std::fmt::Alignment;
+use rfd::FileDialog;
+use crate::ui_lib::ui_menu::draw_menu;
 
 mod ui_attempt_file_table;
 mod ui_bottom_buttons;
 mod ui_csv_table;
 mod ui_current_details;
+mod ui_upper_controls;
+mod ui_menu;
+
+
 
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
     //ui.set_visuals(egui::Visuals::light());
     if state.enable_top {
         egui::Panel::top("gen_top").resizable(true).show(ui, |ui| {
-            let file_menu_items = vec![
-                "Load CSV".to_string(),
-                "Temp Audio Folder".to_string(),
-                "Raw Audio Folder".to_string(),
-            ];
-            ui.push_id(("menu_buttons", 13), |ui| {
-                ui.menu_button("File", |ui| {
-                    for (i, it) in file_menu_items.iter().enumerate() {
-                        if ui.button(it).clicked() {
-                            state.sel_13 = i;
-                            ui.close_kind(egui::UiKind::Menu);
-                        }
-                    }
-                });
-            });
+            draw_menu(ui, state)
         });
     }
 
@@ -76,6 +68,7 @@ pub fn generate_center_ui_elements(
             strip.cell(|ui| {
                 ui.set_min_height(state.ui_csv_table_height);
                 //ui.add(egui::DragValue::new(&mut state.ui_csv_table_height));
+                
                 ui_csv_table::draw_csv_table(ui, state).expect("Failed to render CSV table.");
                 ui.add_space(10.0);
             });
@@ -86,6 +79,7 @@ pub fn generate_center_ui_elements(
                     .clip(true)
                     .horizontal(|mut horizontal_strip| {
                         horizontal_strip.cell(|ui| {
+                            ui.set_clip_rect(ui.max_rect());
                             ui_attempt_file_table::draw_attempt_file_table(ui, state)
                                 .expect("AttemptTable");
                         });

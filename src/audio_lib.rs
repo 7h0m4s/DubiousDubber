@@ -59,52 +59,62 @@ pub fn stop_audio_recording(state: &mut DubiousDubsState) -> Result<(), anyhow::
 }
 
 pub fn start_audio_playback(state: &mut DubiousDubsState, attempts: usize, is_attempt_file:bool) {
-    state.current_mode = CurrentMode::Playback;
-    state.player.stop();
-    state.player.clear();
-
-    let mut audio_file_path = PathBuf::from_str(&state.attempt_directory).unwrap();
-    audio_file_path.push(&state.selected_attempt_filename);
-
-
-    let audio_file_path :PathBuf;
-    if is_attempt_file{
-        audio_file_path= [&state.attempt_directory, &state.selected_attempt_filename].iter().collect();
-    } else {
-        audio_file_path= [&state.commit_directory, &format!("{}.wav", state.selected_dub_id)].iter().collect();
-    }
-
-    let mut attempts_left = attempts;
-    while (attempts_left > 0) {
-        let file = match File::open(&audio_file_path) {
-            Ok(f) => f,
-            Err(err) => {
-                //eprintln!("failed to open wav file: {}", err);
-                attempts_left -= 1;
-                thread::sleep(Duration::from_millis(50));
-                continue;
-            }
+        let Some(player) = &state.player else {
+            state.toasts.warning("Audio Player Unavailable");
+            return;
         };
-        let decoder = match Decoder::new(file) {
-            Ok(f) => f,
-            Err(err) => {
-                attempts_left -= 1;
-                thread::sleep(Duration::from_millis(50));
-                continue;
-            }
-        };
-        state.player.append(decoder);
-        state.player.play();
-        return;
-    }
-    eprintln!(
-        "failed to open wav file: {}",
-        audio_file_path.to_string_lossy()
-    );
+
+        state.current_mode = CurrentMode::Playback;
+        player.stop();
+        player.clear();
+
+        let mut audio_file_path = PathBuf::from_str(&state.attempt_directory).unwrap();
+        audio_file_path.push(&state.selected_attempt_filename);
+
+
+        let audio_file_path: PathBuf;
+        if is_attempt_file {
+            audio_file_path = [&state.attempt_directory, &state.selected_attempt_filename].iter().collect();
+        } else {
+            audio_file_path = [&state.commit_directory, &format!("{}.wav", state.selected_dub_id)].iter().collect();
+        }
+
+        let mut attempts_left = attempts;
+        while (attempts_left > 0) {
+            let file = match File::open(&audio_file_path) {
+                Ok(f) => f,
+                Err(err) => {
+                    //eprintln!("failed to open wav file: {}", err);
+                    attempts_left -= 1;
+                    thread::sleep(Duration::from_millis(50));
+                    continue;
+                }
+            };
+            let decoder = match Decoder::new(file) {
+                Ok(f) => f,
+                Err(err) => {
+                    attempts_left -= 1;
+                    thread::sleep(Duration::from_millis(50));
+                    continue;
+                }
+            };
+            player.append(decoder);
+            player.play();
+            return;
+        }
+        eprintln!(
+            "failed to open wav file: {}",
+            audio_file_path.to_string_lossy()
+        );
+
 }
 
 pub fn stop_audio_playback(state: &mut DubiousDubsState) -> Result<(), anyhow::Error> {
+    let Some(player) = &state.player else {
+        state.toasts.warning("Audio Player Unavailable");
+        return Ok(())
+    };
     state.current_mode = CurrentMode::Idle;
-    state.player.stop();
+    player.stop();
     Ok(())
 }
