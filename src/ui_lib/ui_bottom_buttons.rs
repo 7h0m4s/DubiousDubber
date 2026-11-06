@@ -25,14 +25,29 @@ pub fn draw_bottom_buttons(
         };
         let record_button_styled_text = RichText::new(record_button_text)
             .size(24.0)
-            .color(Color32::WHITE);
-        let record_button = ui.add_enabled(state.current_mode != CurrentMode::Playback, egui::Button::new(record_button_styled_text)
-            .fill(if state.current_mode == CurrentMode::Recording {
-                Color32::DARK_RED
+            .color(if state.is_light_mode {
+                Color32::BLACK
             } else {
-                Color32::DARK_GREEN
-            })
-            .min_size(Vec2::new(110.0, 50.0)));
+                Color32::WHITE
+            });
+        let record_button = ui.add_enabled(
+            state.current_mode != CurrentMode::Playback,
+            egui::Button::new(record_button_styled_text)
+                .fill(if state.current_mode == CurrentMode::Recording {
+                    if state.is_light_mode {
+                        Color32::LIGHT_RED
+                    } else {
+                        Color32::DARK_RED
+                    }
+                } else {
+                    if state.is_light_mode {
+                        Color32::LIGHT_GREEN
+                    } else {
+                        Color32::DARK_GREEN
+                    }
+                })
+                .min_size(Vec2::new(110.0, 50.0)),
+        );
 
         if record_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::Z)) {
             if state.current_mode == CurrentMode::Recording {
@@ -47,8 +62,6 @@ pub fn draw_bottom_buttons(
             }
         }
 
-        
-
         // Keep repainting if we are waiting for playback to finish
         if (state.current_mode == CurrentMode::Playback) {
             ui.ctx()
@@ -56,7 +69,10 @@ pub fn draw_bottom_buttons(
         }
 
         // Check playback status
-        if state.player.as_ref().is_some_and(|player| player.empty() || player.is_paused())
+        if state
+            .player
+            .as_ref()
+            .is_some_and(|player| player.empty() || player.is_paused())
             && state.current_mode == CurrentMode::Playback
         {
             state.current_mode = CurrentMode::Idle;
@@ -68,14 +84,29 @@ pub fn draw_bottom_buttons(
         };
         let playback_button_styled_text = RichText::new(playback_button_text)
             .size(24.0)
-            .color(Color32::WHITE);
-        let playback_button = ui.add_enabled(state.current_mode != CurrentMode::Recording ,egui::Button::new(playback_button_styled_text)
-            .fill(if state.current_mode == CurrentMode::Playback {
-                Color32::DARK_RED
+            .color(if state.is_light_mode {
+                Color32::BLACK
             } else {
-                Color32::DARK_GREEN
-            })
-            .min_size(Vec2::new(110.0, 50.0)));
+                Color32::WHITE
+            });
+        let playback_button = ui.add_enabled(
+            state.current_mode != CurrentMode::Recording,
+            egui::Button::new(playback_button_styled_text)
+                .fill(if state.current_mode == CurrentMode::Playback {
+                    if state.is_light_mode {
+                        Color32::LIGHT_RED
+                    } else {
+                        Color32::DARK_RED
+                    }
+                } else {
+                    if state.is_light_mode {
+                        Color32::LIGHT_GREEN
+                    } else {
+                        Color32::DARK_GREEN
+                    }
+                })
+                .min_size(Vec2::new(110.0, 50.0)),
+        );
 
         if playback_button.clicked() || ui.input(|i| i.key_pressed(egui::Key::X)) {
             if state.current_mode == CurrentMode::Playback {
@@ -91,10 +122,19 @@ pub fn draw_bottom_buttons(
 
         let commit_selected_button_styled_text = RichText::new("(C) Commit & Next")
             .size(24.0)
-            .color(Color32::WHITE);
+            .color(if state.is_light_mode {
+                Color32::BLACK
+            } else {
+                Color32::WHITE
+            });
 
-        let mut commit_selected_button =
-            egui::Button::new(commit_selected_button_styled_text).min_size(Vec2::new(200.0, 50.0));
+        let commit_selected_button = egui::Button::new(commit_selected_button_styled_text)
+            .min_size(Vec2::new(200.0, 50.0))
+            .fill(if state.is_light_mode {
+                Color32::LIGHT_GRAY
+            } else {
+                Color32::DARK_GRAY
+            });
 
         if (ui
             .add_enabled(
@@ -104,27 +144,25 @@ pub fn draw_bottom_buttons(
             .clicked()
             || ui.input(|i| i.key_pressed(egui::Key::C)))
             && state.current_mode == CurrentMode::Idle
+            && !state.selected_attempt_filename.is_empty()
         {
-            if state.selected_attempt_filename != "" {
-                file_lib::commit_selected_attempt_file(state).expect("failed to copy file");
-                let current_csv_selection_index = state
-                    .filtered_csv_records
-                    .iter()
-                    .position(|a| a.dub_id.eq(&state.selected_dub_id))
-                    .unwrap_or(0);
-                let new_selection_index;
-                if state.filtered_csv_records.len() > 1 {
-                    if current_csv_selection_index >= state.filtered_csv_records.len() - 1 {
-                        new_selection_index = current_csv_selection_index - 1;
-                    } else {
-                        new_selection_index = current_csv_selection_index + 1;
-                    }
-
-                    state.selected_csv_record =
-                        state.filtered_csv_records[new_selection_index].clone();
-                    state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
-                    state.selected_attempt_filename.clear();
+            file_lib::commit_selected_attempt_file(state).expect("failed to copy file");
+            let current_csv_selection_index = state
+                .filtered_csv_records
+                .iter()
+                .position(|a| a.dub_id.eq(&state.selected_dub_id))
+                .unwrap_or(0);
+            let new_selection_index;
+            if state.filtered_csv_records.len() > 1 {
+                if current_csv_selection_index >= state.filtered_csv_records.len() - 1 {
+                    new_selection_index = current_csv_selection_index - 1;
+                } else {
+                    new_selection_index = current_csv_selection_index + 1;
                 }
+
+                state.selected_csv_record = state.filtered_csv_records[new_selection_index].clone();
+                state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
+                state.selected_attempt_filename.clear();
             }
         }
 
