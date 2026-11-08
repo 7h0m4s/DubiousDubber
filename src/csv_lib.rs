@@ -36,7 +36,7 @@ pub struct CsvRecord {
 
 
 pub fn parse_csv_records(csv_path: &PathBuf) -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
-    let mut rdr = csv::Reader::from_path(&csv_path)?;
+    let mut rdr = csv::Reader::from_path(csv_path)?;
     let mut csv_vec: Vec<Rc<CsvRecord>> = Vec::new();
     for result in rdr.deserialize() {
         let mut record: CsvRecord = result?;
@@ -47,6 +47,7 @@ pub fn parse_csv_records(csv_path: &PathBuf) -> Result<Vec<Rc<CsvRecord>>, Box<d
         // Try this if you don't like each record smashed on one line:
         // println!("{:#?}", record);
     }
+
     Ok(csv_vec)
 }
 
@@ -73,6 +74,7 @@ pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathB
     state.csv_records = csv_results;
 
     state.is_first_frame = true;
+    state.has_filtered_csv_changed = true;
 }
 
 
