@@ -17,7 +17,7 @@ mod file_lib;
 mod ui_lib;
 
 
-pub static CSV_FILEPATH: &str = "AllLinesDump.csv";
+pub static CSV_FILEPATH: &str = "AllLinesExport.csv";
 
 #[derive(Debug, PartialEq)]
 enum CurrentMode {
