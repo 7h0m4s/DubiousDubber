@@ -3,7 +3,7 @@ use crate::audio_lib::{
 };
 use crate::csv_lib::CsvRecord;
 use crate::file_lib::get_current_attempt_files;
-use crate::ui_lib::{ui_bottom_buttons, ui_current_details};
+use crate::ui_lib::{highlight_quotes, ui_bottom_buttons, ui_current_details};
 use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
 use anyhow::Error;
 use eframe::egui::Role::{CheckBox, Math};
@@ -135,18 +135,17 @@ pub fn draw_detail_multi_line_value(
 
 pub fn draw_dub_line_multi_line_value(
     ui: &mut egui::Ui,
-    text: &str,
     is_centered: bool,
+    state: &mut DubiousDubsState
 ) {
     let layout = if is_centered {
         egui::Layout::centered_and_justified(egui::Direction::TopDown)
     } else {
         egui::Layout::left_to_right(egui::Align::Center)
     };
-    let split_text = text;
-    let styled_text: RichText = RichText::new(split_text.trim()).strong().size(26.0);
+    let split_text = state.selected_csv_record.line_to_dub.clone();
     ui.with_layout(layout, |ui| {
-        ui.add(egui::Label::new(styled_text).selectable(false).wrap())
+        ui.add(egui::Label::new(highlight_quotes(split_text.trim(), state)).selectable(false).wrap())
     });
 }
 
@@ -453,18 +452,14 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
                     draw_detail_single_line_label(ui, "Line To Dub", false);
                 });
             });
-
             
             body.row(30.0, |mut row| {
                 row.col(|ui| {
-
-                        
                             draw_dub_line_multi_line_value(
                         ui,
-                        &state.selected_csv_record.line_to_dub,
-                        false
+                        false,
+                        state
                             );
-
                 });
             });
         });
