@@ -16,11 +16,36 @@ use std::rc::Rc;
 
 pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
 
+    let mut is_scroll_to_row:bool = false;
+    let mut scroll_index:usize = 0;
+    // Keyboard Scroll Controls
+    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
+        let index_of_selected_record = state.filtered_csv_records.iter().position(|a| a.dub_id == state.selected_dub_id && a.choice_id == state.selected_csv_record.choice_id);
+        if let Some(index) = index_of_selected_record && (index > 0) {
+            scroll_index = index - 1;
+            is_scroll_to_row = true;
+            state.selected_csv_record = state.filtered_csv_records[scroll_index].clone();
+            state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
+            state.selected_attempt_filename.clear();
+
+        }
+    }
+    if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
+        let index_of_selected_record = state.filtered_csv_records.iter().position(|a| a.dub_id == state.selected_dub_id && a.choice_id == state.selected_csv_record.choice_id);
+        if let Some(index) = index_of_selected_record && (index < state.filtered_csv_records.len() - 1) {
+            scroll_index = index + 1;
+            is_scroll_to_row = true;
+            state.selected_csv_record = state.filtered_csv_records[scroll_index].clone();
+            state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
+            state.selected_attempt_filename.clear();
+        }
+    }
+
     egui::Frame::canvas(ui.style_mut())
         .inner_margin(egui::Margin::symmetric(4,0))
         .corner_radius(3)
         .show(ui, |ui| {
-            TableBuilder::new(ui)
+            let mut table = TableBuilder::new(ui)
                 .striped(true)
                 .sense(egui::Sense::click())
                 .auto_shrink([false, false])
@@ -29,8 +54,13 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
                 .vscroll(true)
                 .min_scrolled_height(state.ui_csv_table_min_height)
                 // .max_scroll_height(300.0)
-                .max_scroll_height(f32::INFINITY)
-                .column(
+                .max_scroll_height(f32::INFINITY);
+
+                if is_scroll_to_row{
+                    table = table.scroll_to_row(scroll_index, Some(Align::Center));
+                }
+
+                table.column(
                     Column::initial(200.0)
                         .at_least(40.0)
                         .resizable(true)
@@ -107,7 +137,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
 
                     body.rows(30.0, state.filtered_csv_records.len(), |mut row| {
                         let rec = &state.filtered_csv_records[row.index()];
-                        let is_selected = rec.dub_id.eq(&state.selected_dub_id);
+                        let is_selected = rec.dub_id.eq(&state.selected_dub_id) && rec.choice_id.eq(&state.selected_csv_record.choice_id);
                         let mut is_hovered = row.index().eq(&state.hovered_dub_index);
                         let is_committed = state.committed_dub_id_lookup.contains(&rec.dub_id);
 

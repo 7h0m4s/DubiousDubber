@@ -153,7 +153,7 @@ pub fn draw_bottom_buttons(
             let current_csv_selection_index = state
                 .filtered_csv_records
                 .iter()
-                .position(|a| a.dub_id.eq(&state.selected_dub_id))
+                .position(|a| a.dub_id.eq(&state.selected_dub_id) && a.choice_id.eq(&state.selected_csv_record.choice_id))
                 .unwrap_or(0);
             let new_selection_index;
             if state.filtered_csv_records.len() > 1 {
