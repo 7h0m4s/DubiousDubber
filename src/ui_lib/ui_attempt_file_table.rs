@@ -1,16 +1,11 @@
 use crate::audio_lib::{
-    self, start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
+    start_audio_playback, stop_audio_playback,
 };
-use crate::csv_lib::CsvRecord;
-use crate::file_lib::get_current_attempt_files;
-use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
-use anyhow::Error;
-use eframe::egui::Role::CheckBox;
+use crate::{CurrentMode, DubiousDubsState, ui_lib};
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
-use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
-use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::fmt::Alignment;
+use eframe::egui::{self};
+use eframe::egui::Align;
+use egui_extras::{Column, TableBuilder};
 
 pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
     let mut is_scroll_to_row: bool = state.is_after_refresh;

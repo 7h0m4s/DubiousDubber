@@ -1,13 +1,9 @@
-use audio_recorder_rs::Recorder;
-use std::env::var;
 use std::fs::File;
-use std::io::{BufReader, sink};
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use rodio::cpal::traits::HostTrait;
-use rodio::source::SineWave;
-use rodio::{Decoder, DeviceTrait, Sink, Source, cpal};
+use rodio::{Decoder, DeviceTrait, Source, cpal};
 use std::thread;
 use std::time::Duration;
 

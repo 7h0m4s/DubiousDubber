@@ -1,17 +1,16 @@
 #![windows_subsystem = "windows"]
 
-use crate::{csv_lib::{CsvRecord, parse_csv_records}, file_lib::{get_current_attempt_files, get_current_commit_files}};
-use audio_recorder_rs::Recorder;
-use eframe::{Frame, egui, wgpu::naga::FastHashSet};
-use egui::Ui;
-use rodio::{source::Source, OutputStream, Sink};
-use std::{collections::{HashSet, hash_set}, fmt, path::{self, PathBuf}, rc::Rc};
-use std::str::FromStr;
-use eframe::egui::Widget;
-use egui_notify::Toasts;
-use rfd::FileDialog;
 use crate::csv_lib::initialize_csv_state;
 use crate::ui_lib::set_display_visuals;
+use crate::{csv_lib::CsvRecord, file_lib::{get_current_attempt_files, get_current_commit_files}};
+use audio_recorder_rs::Recorder;
+use eframe::egui::Widget;
+use eframe::{Frame, egui, wgpu::naga::FastHashSet};
+use egui::Ui;
+use egui_notify::Toasts;
+use rodio::{OutputStream, Sink, source::Source};
+use std::str::FromStr;
+use std::{fmt, path::PathBuf, rc::Rc};
 
 mod audio_lib;
 mod csv_lib;

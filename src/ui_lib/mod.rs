@@ -1,13 +1,11 @@
 use crate::ui_lib::ui_menu::draw_menu;
 use crate::ui_lib::ui_upper_controls::draw_upper_controls;
-use crate::{CurrentMode, DubiousDubsState, csv_lib};
-use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
-use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
+use crate::DubiousDubsState;
+use eframe::egui::{self};
+use eframe::egui::{Color32, RichText};
 use eframe::epaint::text::{LayoutJob, TextFormat};
 use eframe::epaint::{FontFamily, FontId};
-use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::collections::HashMap;
-use std::iter::Filter;
+use egui_extras::{Size, StripBuilder};
 
 mod ui_attempt_file_table;
 mod ui_bottom_buttons;

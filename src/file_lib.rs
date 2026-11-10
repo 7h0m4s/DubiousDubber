@@ -1,17 +1,11 @@
-use std::error::Error;
-use std::str::FromStr;
-use std::{fs, io};
 use std::io::*;
-use std::fs::{DirEntry, FileType, ReadDir};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use std::str::FromStr;
+use std::fs;
 
-use cpal::FromSample;
 use eframe::wgpu::naga::FastHashSet;
-use eframe::wgpu::naga::compact::KeepUnused::No;
 
 use crate::DubiousDubsState;
-use std::iter::{FilterMap, Map};
-use std::string;
 
 pub fn get_current_attempt_files(state: &mut DubiousDubsState) -> Result<()> {
     let mut current_attempt_path = PathBuf::from(&state.attempt_directory);

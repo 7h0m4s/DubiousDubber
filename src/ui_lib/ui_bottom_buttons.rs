@@ -1,17 +1,11 @@
 use crate::audio_lib::{
     start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
 };
-use crate::csv_lib::CsvRecord;
-use crate::file_lib::{self, get_current_attempt_files};
-use crate::{CurrentMode, DubiousDubsState, csv_lib};
-use anyhow::{Error, Ok};
-use eframe::egui::Role::CheckBox;
-use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, IdSalt, Layout, Stroke, vec2};
-use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
-use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::fmt::Alignment;
-use std::ops::Index;
+use crate::file_lib::{self};
+use crate::{CurrentMode, DubiousDubsState};
+use anyhow::Ok;
+use eframe::egui::{self};
+use eframe::egui::{Color32, RichText, Vec2};
 
 pub fn draw_bottom_buttons(
     ui: &mut egui::Ui,

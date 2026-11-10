@@ -1,23 +1,15 @@
-use crate::audio_lib::{
-    start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
-};
-use crate::csv_lib::CsvRecord;
+use crate::audio_lib::
+start_audio_playback;
 use crate::file_lib::get_current_attempt_files;
-use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
-use anyhow::Error;
-use eframe::egui::Role::CheckBox;
+use crate::{DubiousDubsState, ui_lib};
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, IdSalt, Layout, Sense, Stroke, text_edit, vec2};
-use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
-use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::fmt::Alignment;
-use std::ops::Div;
-use std::rc::Rc;
+use eframe::egui::{self, Sense, vec2};
+use eframe::egui::Align;
+use egui_extras::{Column, TableBuilder};
 
-pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
-
-    let mut is_scroll_to_row:bool = false;
-    let mut scroll_index:usize = 0;
+pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
+    let mut is_scroll_to_row: bool = false;
+    let mut scroll_index: usize = 0;
     // Keyboard Scroll Controls
     if ui.input(|i| i.key_pressed(egui::Key::PageUp) || i.key_pressed(egui::Key::ArrowLeft)) {
         let index_of_selected_record = state.filtered_csv_records.iter().position(|a| a.dub_id == state.selected_dub_id && a.choice_id == state.selected_csv_record.choice_id);

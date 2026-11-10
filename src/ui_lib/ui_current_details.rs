@@ -1,19 +1,9 @@
-use crate::audio_lib::{
-    start_audio_playback, start_audio_recording, stop_audio_playback, stop_audio_recording,
-};
-use crate::csv_lib::CsvRecord;
-use crate::file_lib::get_current_attempt_files;
-use crate::ui_lib::{highlight_quotes, ui_bottom_buttons, ui_current_details};
-use crate::{CurrentMode, DubiousDubsState, csv_lib, ui_lib};
-use anyhow::Error;
-use eframe::egui::Role::{CheckBox, Math};
+use crate::ui_lib::highlight_quotes;
+use crate::DubiousDubsState;
 use eframe::egui::scroll_area::ScrollBarVisibility;
-use eframe::egui::{self, vec2, IdSalt, Layout, Margin, Stroke};
-use eframe::egui::{Align, Color32, FontSelection, RichText, Style, Vec2, text};
-use egui_extras::{Column, Size, StripBuilder, TableBody, TableBuilder, TableRow};
-use std::env::consts;
-use std::fmt::Alignment;
-use std::ops::Mul;
+use eframe::egui::{self};
+use eframe::egui::{Color32, RichText};
+use egui_extras::{Column, Size, StripBuilder, TableBuilder};
 
 pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
     StripBuilder::new(ui)

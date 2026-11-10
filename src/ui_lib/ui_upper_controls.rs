@@ -1,6 +1,6 @@
-use eframe::egui;
 use crate::DubiousDubsState;
 use crate::ui_lib::set_display_visuals;
+use eframe::egui;
 
 pub fn draw_upper_controls(ui: &mut egui::Ui, state: &mut DubiousDubsState){
     ui.add_space(10.0);

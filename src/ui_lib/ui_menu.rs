@@ -1,7 +1,7 @@
+use crate::DubiousDubsState;
+use crate::csv_lib::initialize_csv_state;
 use eframe::egui;
 use rfd::FileDialog;
-use crate::csv_lib::initialize_csv_state;
-use crate::DubiousDubsState;
 
 enum MenuButtons {
     LoadCsv,
