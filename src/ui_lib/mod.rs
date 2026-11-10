@@ -1,6 +1,6 @@
+use crate::DubiousDubsState;
 use crate::ui_lib::ui_menu::draw_menu;
 use crate::ui_lib::ui_upper_controls::draw_upper_controls;
-use crate::DubiousDubsState;
 use eframe::egui::{self};
 use eframe::egui::{Color32, RichText};
 use eframe::epaint::text::{LayoutJob, TextFormat};
@@ -13,7 +13,6 @@ mod ui_csv_table;
 mod ui_current_details;
 mod ui_menu;
 mod ui_upper_controls;
-
 
 pub fn generated_ui_panels(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
     ui.spacing_mut().item_spacing.y = -0.0;
@@ -145,7 +144,6 @@ fn format_table_cell(
         ui.add(egui::Label::new(styled_text).selectable(false))
     });
 }
-
 
 pub fn highlight_quotes(in_string: &str, state: &mut DubiousDubsState) -> LayoutJob {
     let regular_color = if state.is_light_mode {

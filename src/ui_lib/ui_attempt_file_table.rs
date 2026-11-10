@@ -1,10 +1,8 @@
-use crate::audio_lib::{
-    start_audio_playback, stop_audio_playback,
-};
+use crate::audio_lib::{start_audio_playback, stop_audio_playback};
 use crate::{CurrentMode, DubiousDubsState, ui_lib};
+use eframe::egui::Align;
 use eframe::egui::scroll_area::ScrollBarVisibility;
 use eframe::egui::{self};
-use eframe::egui::Align;
 use egui_extras::{Column, TableBuilder};
 
 pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
@@ -36,13 +34,12 @@ pub fn draw_attempt_file_table(ui: &mut egui::Ui, state: &mut DubiousDubsState) 
             state.current_attempt_filenames[state.current_attempt_filenames.len() - 1].to_string();
     }
 
-    if(is_scroll_to_row) {
+    if (is_scroll_to_row) {
         let index_of_selected_attempt = state
             .current_attempt_filenames
             .iter()
             .position(|filename| filename.eq(&state.selected_attempt_filename));
-        if let Some(index) = index_of_selected_attempt
-        {
+        if let Some(index) = index_of_selected_attempt {
             scroll_index = index;
         }
     }

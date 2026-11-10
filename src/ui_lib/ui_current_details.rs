@@ -1,5 +1,5 @@
-use crate::ui_lib::highlight_quotes;
 use crate::DubiousDubsState;
+use crate::ui_lib::highlight_quotes;
 use eframe::egui::scroll_area::ScrollBarVisibility;
 use eframe::egui::{self};
 use eframe::egui::{Color32, RichText};
@@ -21,7 +21,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         // 1st Column
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(egui::Margin::symmetric(4,0))
+                                .inner_margin(egui::Margin::symmetric(4, 0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_1(ui, state);
@@ -31,7 +31,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         // 2nd Column
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(egui::Margin::symmetric(4,0))
+                                .inner_margin(egui::Margin::symmetric(4, 0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_2(ui, state);
@@ -40,7 +40,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(egui::Margin::symmetric(4,0))
+                                .inner_margin(egui::Margin::symmetric(4, 0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_sets(ui, state);
@@ -49,7 +49,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
 
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(egui::Margin::symmetric(4,0))
+                                .inner_margin(egui::Margin::symmetric(4, 0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_path(ui, state);
@@ -57,7 +57,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                         });
                         strip.cell(|ui| {
                             egui::Frame::canvas(ui.style_mut())
-                                .inner_margin(egui::Margin::symmetric(4,0))
+                                .inner_margin(egui::Margin::symmetric(4, 0))
                                 .corner_radius(5)
                                 .show(ui, |ui| {
                                     draw_detail_table_requirements(ui, state);
@@ -71,7 +71,7 @@ pub fn draw_current_details(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                 ui.separator();
                 ui.add_space(10.0);
                 egui::Frame::canvas(ui.style_mut())
-                    .inner_margin(egui::Margin::symmetric(4,0))
+                    .inner_margin(egui::Margin::symmetric(4, 0))
                     .corner_radius(5)
                     .show(ui, |ui| {
                         draw_detail_table_line_to_dub(ui, state);
@@ -91,7 +91,6 @@ pub fn draw_detail_single_line_label(ui: &mut egui::Ui, text: &str, is_centered:
         ui.add(egui::Label::new(styled_text).selectable(false))
     });
 }
-
 
 pub fn draw_detail_single_line_value(ui: &mut egui::Ui, text: &str, is_centered: bool) {
     let layout = if is_centered {
@@ -126,7 +125,7 @@ pub fn draw_detail_multi_line_value(
 pub fn draw_dub_line_multi_line_value(
     ui: &mut egui::Ui,
     is_centered: bool,
-    state: &mut DubiousDubsState
+    state: &mut DubiousDubsState,
 ) {
     let layout = if is_centered {
         egui::Layout::centered_and_justified(egui::Direction::TopDown)
@@ -135,7 +134,11 @@ pub fn draw_dub_line_multi_line_value(
     };
     let split_text = state.selected_csv_record.line_to_dub.clone();
     ui.with_layout(layout, |ui| {
-        ui.add(egui::Label::new(highlight_quotes(split_text.trim(), state)).selectable(false).wrap())
+        ui.add(
+            egui::Label::new(highlight_quotes(split_text.trim(), state))
+                .selectable(false)
+                .wrap(),
+        )
     });
 }
 
@@ -442,14 +445,10 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
                     draw_detail_single_line_label(ui, "Line To Dub", false);
                 });
             });
-            
+
             body.row(30.0, |mut row| {
                 row.col(|ui| {
-                            draw_dub_line_multi_line_value(
-                        ui,
-                        false,
-                        state
-                            );
+                    draw_dub_line_multi_line_value(ui, false, state);
                 });
             });
         });

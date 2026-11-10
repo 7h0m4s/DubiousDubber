@@ -9,7 +9,6 @@ use std::str::FromStr;
 #[derive(Debug, Deserialize, Default, Clone)]
 #[serde(rename_all = "snake_case")]
 pub struct CsvRecord {
-
     #[serde(skip_deserializing)]
     pub dub_id: String,
 
@@ -31,8 +30,6 @@ pub struct CsvRecord {
     pub has_battle: String,
 }
 
-
-
 pub fn parse_csv_records(csv_path: &PathBuf) -> Result<Vec<Rc<CsvRecord>>, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_path(csv_path)?;
     let mut csv_vec: Vec<Rc<CsvRecord>> = Vec::new();
@@ -49,8 +46,7 @@ pub fn parse_csv_records(csv_path: &PathBuf) -> Result<Vec<Rc<CsvRecord>>, Box<d
     Ok(csv_vec)
 }
 
-pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathBuf>){
-
+pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathBuf>) {
     state.csv_filter = String::default();
     state.filtered_csv_records = Vec::<Rc<CsvRecord>>::default();
     state.selected_csv_record = Rc::default();
@@ -59,9 +55,15 @@ pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathB
     state.current_attempt_filenames = Vec::<String>::default();
     state.selected_attempt_filename = String::default();
 
-    let csv_filepath:PathBuf = if (path_buf.is_none()) {PathBuf::from_str(CSV_FILEPATH).unwrap_or_default()} else {path_buf.unwrap_or_default()};
+    let csv_filepath: PathBuf = if (path_buf.is_none()) {
+        PathBuf::from_str(CSV_FILEPATH).unwrap_or_default()
+    } else {
+        path_buf.unwrap_or_default()
+    };
     let csv_results = parse_csv_records(&csv_filepath)
-        .map_err(|error| {state.toasts.error(error.to_string());})
+        .map_err(|error| {
+            state.toasts.error(error.to_string());
+        })
         .unwrap_or_default();
 
     if !csv_results.is_empty() {
@@ -74,7 +76,3 @@ pub fn initialize_csv_state(state: &mut DubiousDubsState, path_buf: Option<PathB
     state.is_first_frame = true;
     state.has_filtered_csv_changed = true;
 }
-
-
-
-

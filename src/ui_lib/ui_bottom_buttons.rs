@@ -17,13 +17,14 @@ pub fn draw_bottom_buttons(
         } else {
             "(Z) Start Recording"
         };
-        let record_button_styled_text = RichText::new(record_button_text)
-            .size(24.0)
-            .color(if state.is_light_mode {
-                Color32::BLACK
-            } else {
-                Color32::WHITE
-            });
+        let record_button_styled_text =
+            RichText::new(record_button_text)
+                .size(24.0)
+                .color(if state.is_light_mode {
+                    Color32::BLACK
+                } else {
+                    Color32::WHITE
+                });
         let record_button = ui.add_enabled(
             state.current_mode != CurrentMode::Playback,
             egui::Button::new(record_button_styled_text)
@@ -43,7 +44,9 @@ pub fn draw_bottom_buttons(
                 .min_size(Vec2::new(110.0, 50.0)),
         );
 
-        if record_button.clicked() || (ui.input(|i| i.key_pressed(egui::Key::Z) && !state.is_filter_box_in_focus)) {
+        if record_button.clicked()
+            || (ui.input(|i| i.key_pressed(egui::Key::Z) && !state.is_filter_box_in_focus))
+        {
             state.has_filtered_csv_changed = true;
             if state.current_mode == CurrentMode::Recording {
                 stop_audio_recording(state).expect("Error when stopping recording");
@@ -77,13 +80,14 @@ pub fn draw_bottom_buttons(
         } else {
             "(X) Start Playback"
         };
-        let playback_button_styled_text = RichText::new(playback_button_text)
-            .size(24.0)
-            .color(if state.is_light_mode {
-                Color32::BLACK
-            } else {
-                Color32::WHITE
-            });
+        let playback_button_styled_text =
+            RichText::new(playback_button_text)
+                .size(24.0)
+                .color(if state.is_light_mode {
+                    Color32::BLACK
+                } else {
+                    Color32::WHITE
+                });
         let playback_button = ui.add_enabled(
             state.current_mode != CurrentMode::Recording,
             egui::Button::new(playback_button_styled_text)
@@ -103,7 +107,9 @@ pub fn draw_bottom_buttons(
                 .min_size(Vec2::new(110.0, 50.0)),
         );
 
-        if playback_button.clicked() || (ui.input(|i| i.key_pressed(egui::Key::X) && !state.is_filter_box_in_focus)) {
+        if playback_button.clicked()
+            || (ui.input(|i| i.key_pressed(egui::Key::X) && !state.is_filter_box_in_focus))
+        {
             state.has_filtered_csv_changed = true;
             if state.current_mode == CurrentMode::Playback {
                 stop_audio_playback(state).expect("Error when stopping Playback");
@@ -147,7 +153,10 @@ pub fn draw_bottom_buttons(
             let current_csv_selection_index = state
                 .filtered_csv_records
                 .iter()
-                .position(|a| a.dub_id.eq(&state.selected_dub_id) && a.choice_id.eq(&state.selected_csv_record.choice_id))
+                .position(|a| {
+                    a.dub_id.eq(&state.selected_dub_id)
+                        && a.choice_id.eq(&state.selected_csv_record.choice_id)
+                })
                 .unwrap_or(0);
             let new_selection_index;
             if state.filtered_csv_records.len() > 1 {
