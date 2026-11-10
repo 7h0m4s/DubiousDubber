@@ -21,7 +21,6 @@ pub fn get_current_attempt_files(state: &mut DubiousDubsState) -> Result<()> {
 
     let files: Vec<String> = fs::read_dir(&current_attempt_path)?
     .filter_map(Result::ok)
-    .filter(|f|f.path().is_file())
     .filter_map(|f| f.file_name().into_string().ok())
     .filter(|f| f.starts_with(&state.selected_dub_id) && f.ends_with(".wav"))
     .map(|f| f.to_string())
@@ -63,7 +62,6 @@ pub fn get_current_commit_files(state: &mut DubiousDubsState) -> Result<()> {
 
     let files: FastHashSet<String> = fs::read_dir(&current_commit_path)?
     .filter_map(Result::ok)
-    .filter(|f|f.path().is_file())
     .filter_map(|f| f.file_name().into_string().ok())
     .filter(|f| f.ends_with(".wav"))
     .map(|f| f.to_string().replace(".wav", ""))
