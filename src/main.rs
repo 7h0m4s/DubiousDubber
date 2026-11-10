@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use crate::{csv_lib::{CsvRecord, parse_csv_records}, file_lib::{get_current_attempt_files, get_current_commit_files}};
 use audio_recorder_rs::Recorder;
 use eframe::{Frame, egui, wgpu::naga::FastHashSet};
