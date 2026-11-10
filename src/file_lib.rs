@@ -17,7 +17,7 @@ pub fn get_current_attempt_files(state: &mut DubiousDubsState) -> Result<()> {
     let mut current_attempt_path = PathBuf::from(&state.attempt_directory);
 
     // make sure the directory exists
-    fs::create_dir_all(&current_attempt_path)?;
+    if(state.is_first_frame){fs::create_dir_all(&current_attempt_path)?};
 
     let files: Vec<String> = fs::read_dir(&current_attempt_path)?
     .filter_map(Result::ok)
@@ -58,7 +58,7 @@ pub fn get_current_commit_files(state: &mut DubiousDubsState) -> Result<()> {
     let mut current_commit_path = PathBuf::from(&state.commit_directory);
 
     // make sure the directory exists
-    fs::create_dir_all(&current_commit_path)?;
+    if(state.is_first_frame){fs::create_dir_all(&current_commit_path)?};
 
     let files: FastHashSet<String> = fs::read_dir(&current_commit_path)?
     .filter_map(Result::ok)
