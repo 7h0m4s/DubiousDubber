@@ -189,7 +189,7 @@ fn draw_detail_table_1(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
         .column(
             Column::initial(250.0)
                 .at_least(40.0)
-                .resizable(true)
+                .resizable(false)
                 .clip(false),
         )
         .body(|mut body| {
@@ -273,7 +273,7 @@ fn draw_detail_table_2(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
         .column(
             Column::initial(100.0)
                 .at_least(40.0)
-                .resizable(true)
+                .resizable(false)
                 .clip(false),
         )
         .body(|mut body| {

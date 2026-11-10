@@ -80,7 +80,7 @@ pub fn commit_selected_attempt_file(state: &mut DubiousDubsState) -> std::io::Re
     let attempt_path :PathBuf = [&state.attempt_directory, &state.selected_attempt_filename].iter().collect();
     let commit_path :PathBuf = [&state.commit_directory, &format!("{}.wav", &state.selected_dub_id) ].iter().collect();
 
-    fs::create_dir_all(PathBuf::from(&state.commit_directory))?;
+    //fs::create_dir_all(PathBuf::from(&state.commit_directory))?;
     fs::copy(attempt_path, commit_path)?;  
     Ok(())
 }

@@ -19,7 +19,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
     let mut is_scroll_to_row:bool = false;
     let mut scroll_index:usize = 0;
     // Keyboard Scroll Controls
-    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
+    if ui.input(|i| i.key_pressed(egui::Key::PageUp) || i.key_pressed(egui::Key::ArrowLeft)) {
         let index_of_selected_record = state.filtered_csv_records.iter().position(|a| a.dub_id == state.selected_dub_id && a.choice_id == state.selected_csv_record.choice_id);
         if let Some(index) = index_of_selected_record && (index > 0) {
             scroll_index = index - 1;
@@ -27,10 +27,11 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
             state.selected_csv_record = state.filtered_csv_records[scroll_index].clone();
             state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
             state.selected_attempt_filename.clear();
+            state.has_filtered_csv_changed = true;
 
         }
     }
-    if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
+    if ui.input(|i| i.key_pressed(egui::Key::PageDown) || i.key_pressed(egui::Key::ArrowRight)) {
         let index_of_selected_record = state.filtered_csv_records.iter().position(|a| a.dub_id == state.selected_dub_id && a.choice_id == state.selected_csv_record.choice_id);
         if let Some(index) = index_of_selected_record && (index < state.filtered_csv_records.len() - 1) {
             scroll_index = index + 1;
@@ -38,6 +39,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
             state.selected_csv_record = state.filtered_csv_records[scroll_index].clone();
             state.selected_dub_id = state.selected_csv_record.dub_id.to_string();
             state.selected_attempt_filename.clear();
+            state.has_filtered_csv_changed = true;
         }
     }
 
@@ -230,6 +232,7 @@ pub fn draw_csv_table(ui: &mut egui::Ui, state: &mut DubiousDubsState){
                             state.selected_dub_id = rec.dub_id.to_string();
                             state.selected_csv_record = rec.clone();
                             state.selected_attempt_filename.clear();
+                            get_current_attempt_files(state);
                         }
 
                         if is_double_clicked{

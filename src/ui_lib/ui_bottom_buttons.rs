@@ -79,9 +79,9 @@ pub fn draw_bottom_buttons(
             state.current_mode = CurrentMode::Idle;
         }
         let playback_button_text = if state.current_mode == CurrentMode::Playback {
-            "(X) Stop playback"
+            "(X) Stop Playback"
         } else {
-            "(X) Start playback"
+            "(X) Start Playback"
         };
         let playback_button_styled_text = RichText::new(playback_button_text)
             .size(24.0)

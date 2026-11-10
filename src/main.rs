@@ -33,6 +33,7 @@ struct DubiousDubsState {
     enable_left: bool,
     enable_right: bool,
     is_first_frame:bool,
+    is_after_refresh: bool,
     is_light_mode:bool,
     volume: f32,
     ui_csv_table_height: f32,
@@ -99,6 +100,7 @@ impl Default for DubiousDubsState {
             enable_left: false,
             enable_right: false,
             is_first_frame: true,
+            is_after_refresh: true,
             is_light_mode: false,
             volume: 1.0,
             ui_csv_table_height: 300.0,
@@ -158,16 +160,21 @@ impl eframe::App for DubiousDubsApp {
     fn ui(&mut self, ui: &mut Ui, frame: &mut Frame) {
         // Show Toasts
         self.state.toasts.show(ui);
-        ui.set_zoom_factor(1.10);
+
+
+        if self.state.is_after_refresh {self.state.is_after_refresh = false};
 
         if self.state.is_first_frame {
             set_display_visuals(ui, &mut self.state);
+            //ui.set_zoom_factor(1.20);
         }
 
-        get_current_attempt_files(&mut self.state);
-        get_current_commit_files(&mut self.state);
         
         if(self.state.has_filtered_csv_changed || self.state.is_first_frame) {
+            self.state.is_after_refresh = true;
+            //get_current_attempt_files(&mut self.state);
+            get_current_commit_files(&mut self.state);
+
             self.state.filtered_csv_records = self.state
                 .csv_records
                 .iter()
@@ -187,11 +194,16 @@ impl eframe::App for DubiousDubsApp {
 
         }
         
-        
         ui_lib::generated_ui_panels(ui, &mut self.state);
+
+        if self.state.is_after_refresh {
+            get_current_attempt_files(&mut self.state);
+        }
 
         if self.state.is_first_frame{
             self.state.is_first_frame = false;
+        }
+        if self.state.has_filtered_csv_changed {
         }
     }
 }
