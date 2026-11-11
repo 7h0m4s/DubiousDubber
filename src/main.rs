@@ -37,6 +37,7 @@ struct DubiousDubsState {
     is_after_refresh: bool,
     is_light_mode: bool,
     volume: f32,
+    zoom: i32,
     ui_csv_table_height: f32,
     ui_csv_table_min_height: f32,
     current_mode: CurrentMode,
@@ -103,6 +104,7 @@ impl Default for DubiousDubsState {
             is_after_refresh: true,
             is_light_mode: false,
             volume: 1.0,
+            zoom: 0,
             ui_csv_table_height: 300.0,
             ui_csv_table_min_height: 30.0,
             current_mode: CurrentMode::Idle,
@@ -167,7 +169,6 @@ impl eframe::App for DubiousDubsApp {
 
         if self.state.is_first_frame {
             set_display_visuals(ui, &mut self.state);
-            //ui.set_zoom_factor(1.20);
         }
 
         if (self.state.has_filtered_csv_changed || self.state.is_first_frame) {

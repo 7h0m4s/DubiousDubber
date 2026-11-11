@@ -1,3 +1,4 @@
+use std::ops::Mul;
 use crate::DubiousDubsState;
 use crate::ui_lib::set_display_visuals;
 use eframe::egui;
@@ -47,11 +48,28 @@ pub fn draw_upper_controls(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                     .as_ref()
                     .map(|player| player.set_volume(state.volume));
             }
+            ui.separator();
+            let plus_button = ui.add(egui::Button::new("-"));
+            if plus_button.clicked() {
+                state.zoom -= 1;
+                ui.set_zoom_factor(1.0 + 0.05.mul(state.zoom as f32));
+            }
+            ui.label(state.zoom.to_string());
+            let plus_button = ui.add(egui::Button::new("+"));
+            if plus_button.clicked() {
+                state.zoom += 1;
+                ui.set_zoom_factor(1.0 + 0.05.mul(state.zoom as f32));
+            }
+            ui.label("Zoom:");
 
             ui.separator();
-            ui.label("🟡 Light Mode");
+
             let toggle = ui.add(toggle(&mut state.is_light_mode));
-            ui.label("⚫ Dark Mode");
+            if(state.is_light_mode) {
+                ui.label("🟡 Light Mode");
+            } else {
+                ui.label("⚫ Dark Mode");
+            }
 
             if toggle.changed() {
                 set_display_visuals(ui, state);
