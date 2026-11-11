@@ -436,7 +436,7 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
         .column(
             Column::initial(1225.0)
                 .at_least(40.0)
-                .resizable(false)
+                .resizable(true)
                 .clip(false),
         )
         .body(|mut body| {
