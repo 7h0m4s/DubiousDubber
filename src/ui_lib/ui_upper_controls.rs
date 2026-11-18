@@ -32,11 +32,6 @@ pub fn draw_upper_controls(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             state.csv_records.len()
         ));
 
-        // ui.add_space(20.0);
-        // ui.label(format!(
-        //     "Current Screen Width: {}",
-        //     ui.content_rect().width()
-        // ));
 
         let layout = egui::Layout::right_to_left(egui::Align::RIGHT);
 

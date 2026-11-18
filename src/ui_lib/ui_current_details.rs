@@ -341,13 +341,6 @@ fn draw_detail_table_path(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
                     draw_detail_single_line_label(ui, "Path", false);
                 });
             });
-
-            let line_count = state.selected_csv_record.path.matches(">").count();
-            body.row(30.0, |mut row| {
-                row.col(|ui| {
-                    draw_detail_multi_line_value(ui, &state.selected_csv_record.path, false, " >");
-                });
-            });
         });
 }
 
@@ -371,22 +364,6 @@ fn draw_detail_table_requirements(ui: &mut egui::Ui, state: &mut DubiousDubsStat
                     draw_detail_single_line_label(ui, "Requirements", false);
                 });
             });
-
-            let line_count = state
-                .selected_csv_record
-                .requirements
-                .matches("~if")
-                .count();
-            body.row(30.0, |mut row| {
-                row.col(|ui| {
-                    draw_detail_multi_line_value(
-                        ui,
-                        &state.selected_csv_record.requirements,
-                        false,
-                        "~if",
-                    );
-                });
-            });
         });
 }
 
@@ -408,18 +385,6 @@ fn draw_detail_table_sets(ui: &mut egui::Ui, state: &mut DubiousDubsState) {
             body.row(30.0, |mut row| {
                 row.col(|ui| {
                     draw_detail_single_line_label(ui, "Sets", false);
-                });
-            });
-
-            let line_count = state.selected_csv_record.sets.matches("~set").count();
-            body.row(30.0, |mut row| {
-                row.col(|ui| {
-                    draw_detail_multi_line_value(
-                        ui,
-                        &state.selected_csv_record.sets,
-                        false,
-                        "~set",
-                    );
                 });
             });
         });
@@ -454,50 +419,3 @@ fn draw_detail_table_line_to_dub(ui: &mut egui::Ui, state: &mut DubiousDubsState
         });
 }
 
-// ui.vertical(|ui| {
-//     ui.horizontal_centered(|ui| {
-//         ui.vertical(|ui| {
-//             ui_lib::draw_gridcell_text(ui, "Dub ID: ", &state.selected_csv_record.dub_id);
-//             ui_lib::draw_gridcell_text(ui, "Story ID: ", &state.selected_csv_record.story_id);
-//             ui_lib::draw_gridcell_text(ui, "Choice ID: ", &state.selected_csv_record.choice_id);
-//             ui_lib::draw_gridcell_text(ui, "Hashcode: ", &state.selected_csv_record.hashcode);
-//             ui_lib::draw_gridcell_text(ui, "Character: ", &state.selected_csv_record.character);
-//             ui_lib::draw_gridcell_text(ui, "Characters: ", &state.selected_csv_record.characters);
-//             ui_lib::draw_gridcell_text(ui, "Button Text: ", &state.selected_csv_record.button_text);
-//         });
-
-//         ui.vertical(|ui| {
-//             ui_lib::draw_gridcell_text(ui, "Level: ", &state.selected_csv_record.level);
-//             ui_lib::draw_gridcell_checkbox(
-//                 ui,
-//                 "Is Dream",
-//                 state.selected_csv_record.is_dream.eq("True"),
-//             );
-//             ui_lib::draw_gridcell_checkbox(
-//                 ui,
-//                 "Is Flirt",
-//                 state.selected_csv_record.is_flirt.eq("True"),
-//             );
-//             ui_lib::draw_gridcell_checkbox(
-//                 ui,
-//                 "Is Groundhog",
-//                 state.selected_csv_record.is_groundhog.eq("True"),
-//             );
-//             ui_lib::draw_gridcell_checkbox(
-//                 ui,
-//                 "Has Battle",
-//                 state.selected_csv_record.has_battle.eq("True"),
-//             );
-//         });
-//         ui.vertical(|ui| {
-//             ui_lib::draw_gridcell_requirements_text(
-//                 ui,
-//                 "Requirements: ",
-//                 &state.selected_csv_record.requirements,
-//             );
-//             ui_lib::draw_gridcell_path_text(ui, "Path: ", &state.selected_csv_record.path);
-//             ui_lib::draw_gridcell_sets_text(ui, "Sets: ", &state.selected_csv_record.sets);
-//         });
-//     });
-//     ui_lib::draw_gridcell_multiline_text(ui, "Line To Dub: ", &state.selected_csv_record.line_to_dub);
-// });

@@ -19,6 +19,6 @@ opener = "0.9.0"
 egui = "0.37.0"
 
 [profile.release]
-lto = "fat"            # whole-program link-time optimization
-codegen-units = 1      # better optimization, slower compile
+lto = "fat"            # whole-program link-time optimization but slower compile
+codegen-units = 1      # better optimization but slower compile
 
