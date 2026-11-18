@@ -149,7 +149,6 @@ Now place your processed .ogg audio files inside
 
 `Exocolonist\BepInEx\plugins\ExoDub\VoicePackLibrary{VoicePackName}`
 
----
 
 ## Contributing
 
