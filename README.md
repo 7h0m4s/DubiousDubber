@@ -1,7 +1,5 @@
 # DubiousDubber
 
-<img src="https://img.shields.io/badge/built%20with-Rust-orange.svg)" alt="Screenshot">
-
 [License: GPL v3](https://www.gnu.org/licenses/gpl-3.0) 
 
 A fast, custom tool for creating [ExoDubber](https://github.com/%5Byour-username%5D/ExoDubber) voicepacks to dub the game [*I Was a Teenage Exocolonist*](https://store.steampowered.com/app/1148760/I_Was_a_Teenage_Exocolonist/).
