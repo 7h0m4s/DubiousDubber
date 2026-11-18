@@ -1,6 +1,6 @@
 # DubiousDubber
 
-![](https://img.shields.io/badge/built%20with-Rust-orange.svg)
+<img src="https://img.shields.io/badge/built%20with-Rust-orange.svg)" alt="Screenshot">
 
 [License: GPL v3](https://www.gnu.org/licenses/gpl-3.0) 
 
@@ -30,10 +30,9 @@ I Was a Teenage Exocolonist* has a rough wordcount of 580,000. For comparison, e
 
 
 ## Screenshots
+<img src="images/screenshot_darkmode.png" alt="Screenshot" width="500">
 
-![](images/screenshot_darkmode.png)
-
-![](images/screenshot_lightmode.png)
+<img src="images/screenshot_lightmode.png" alt="Screenshot" width="500">
 
 ## Installation
 
@@ -69,7 +68,7 @@ How to create a custom voicepack for ExoDub from scratch
 
 - Go to Settings > Audio in-game and scroll to the bottom
 
-- ![](images/screenshot_settings.png)
+- <img src="images/screenshot_settings.png" alt="Screenshot" width="500">
 
 - Set "CSV EXPORT ON START" to be **ON**
 
@@ -81,7 +80,7 @@ How to create a custom voicepack for ExoDub from scratch
 
 ### 2. Record Takes
 
-![](images/screenshot_recording.png)
+- <img src="images/screenshot_recording.png" alt="Screenshot" width="500">
 
 - Select the line you want to record from the table at the top of the screen. You can also use the left and right arrow keys or the Page Up and Page Down buttons
 
@@ -94,7 +93,7 @@ How to create a custom voicepack for ExoDub from scratch
 
 ### 3. Playback Takes
 
-![](images/screenshot_playback.png)
+- <img src="images/screenshot_playback.png" alt="Screenshot" width="500">
 
 - Select the recording attempt you wish to playback from the table in the bottom left of the screen. Click with mouse or use up or down arrow keys.
 
@@ -107,7 +106,7 @@ How to create a custom voicepack for ExoDub from scratch
 
 ### 4. Commit Takes
 
-![](images/screenshot_commit.png)
+- <img src="images/screenshot_commit.png" alt="Screenshot" width="500">
 
 - Select the attempt file you wish to be the final version from the table in the bottom left of the screen. Click with mouse or use up or down arrow keys.
 
